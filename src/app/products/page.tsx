@@ -24,30 +24,35 @@ async function getProducts(params: {
   try {
     const supabase = await createClient();
     let query = supabase
-      .from("products")
-      .select("*, category:categories(*), images:product_images(*)", { count: "exact" })
+      .from("shop_products")
+      .select("*, category:categories(*), images:shop_product_images(*)", { count: "exact" })
       .eq("is_active", true);
 
+    // Category filter: resolve slug → id first
     if (params.category) {
-      query = query.eq("categories.slug", params.category);
-    }
-    if (params.featured === "true") {
-      query = query.eq("is_featured", true);
-    }
-    if (params.q) {
-      query = query.ilike("name", `%${params.q}%`);
+      const { data: cat } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("slug", params.category)
+        .single();
+      if (cat) {
+        query = query.eq("category_id", cat.id);
+      }
     }
 
+    if (params.featured === "true") query = query.eq("is_featured", true);
+    if (params.q) query = query.ilike("name", `%${params.q}%`);
+
     const sortMap: Record<string, { col: string; asc: boolean }> = {
-      newest: { col: "created_at", asc: false },
-      "price-asc": { col: "price", asc: true },
-      "price-desc": { col: "price", asc: false },
-      name: { col: "name", asc: true },
+      newest:       { col: "created_at", asc: false },
+      "price-asc":  { col: "price",      asc: true  },
+      "price-desc": { col: "price",      asc: false },
+      name:         { col: "name",       asc: true  },
     };
     const sort = sortMap[params.sort ?? "newest"] ?? sortMap.newest;
     query = query.order(sort.col, { ascending: sort.asc });
 
-    const page = Math.max(1, parseInt(params.page ?? "1", 10));
+    const page    = Math.max(1, parseInt(params.page ?? "1", 10));
     const perPage = 12;
     query = query.range((page - 1) * perPage, page * perPage - 1);
 
@@ -62,21 +67,22 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const { products, total } = await getProducts(params);
 
-  const title = params.featured === "true"
-    ? "Featured Products"
-    : params.category
-    ? params.category.charAt(0).toUpperCase() + params.category.slice(1)
-    : params.q
-    ? `Search: "${params.q}"`
-    : "All Products";
+  const title =
+    params.featured === "true"
+      ? "Featured Products"
+      : params.category
+      ? params.category.charAt(0).toUpperCase() + params.category.slice(1)
+      : params.q
+      ? `Search: "${params.q}"`
+      : "All Products";
 
   return (
     <div className="min-h-screen pt-24">
       {/* Page header */}
       <div className="bg-obsidian-900 border-b border-obsidian-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="relative">
-            <div className="absolute -left-4 top-0 w-1 h-full bg-gold-500 rounded-full" />
+          <div className="relative pl-5">
+            <div className="absolute left-0 top-0 w-1 h-full bg-gold-500 rounded-full" />
             <p className="text-gold-500 text-xs font-semibold uppercase tracking-[0.3em] mb-2">
               MUFASA Collection
             </p>
@@ -92,14 +98,12 @@ export default async function ProductsPage({ searchParams }: PageProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar filters */}
           <aside className="lg:w-60 shrink-0">
             <Suspense>
               <ProductFilters />
             </Suspense>
           </aside>
 
-          {/* Grid */}
           <div className="flex-1">
             {products.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 text-center">

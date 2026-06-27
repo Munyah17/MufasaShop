@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Create order in Supabase
     const { data: order, error: orderError } = await supabase
-      .from("orders")
+      .from("shop_orders")
       .insert({
         customer_email,
         customer_name,
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Insert order items
-    await supabase.from("order_items").insert(
+    await supabase.from("shop_order_items").insert(
       items.map((item: {
         product_id: string;
         name: string;
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       console.error("[paynow] initiation failed:", result.error);
       // Roll back the order to failed
       await supabase
-        .from("orders")
+        .from("shop_orders")
         .update({ status: "failed", payment_status: "failed" })
         .eq("id", order.id);
       return NextResponse.json(
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     // 4. Store poll URL for status checking
     if (result.pollUrl) {
       await supabase
-        .from("orders")
+        .from("shop_orders")
         .update({ paynow_reference: result.pollUrl })
         .eq("id", order.id);
     }

@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   // Find the order by the Paynow poll URL stored at initiation
   const { data: order, error: findError } = await supabase
-    .from("orders")
+    .from("shop_orders")
     .select("id")
     .eq("paynow_reference", pollurl)
     .single();
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   if (findError || !order) {
     // Fallback: try matching by payment_reference
     const { data: orderByRef } = await supabase
-      .from("orders")
+      .from("shop_orders")
       .select("id")
       .eq("payment_reference", reference)
       .maybeSingle();
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    await supabase.from("orders").update({
+    await supabase.from("shop_orders").update({
       ...mapped,
       payment_reference: reference,
       updated_at: new Date().toISOString(),
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { error: updateError } = await supabase
-    .from("orders")
+    .from("shop_orders")
     .update({
       ...mapped,
       payment_reference: reference,

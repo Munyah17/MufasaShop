@@ -88,8 +88,8 @@ export default function OrderPage() {
   async function fetchOrder() {
     const supabase = createClient();
     const { data } = await supabase
-      .from("orders")
-      .select("*, items:order_items(*)")
+      .from("shop_orders")
+      .select("*, items:shop_order_items(*)")
       .eq("id", id)
       .single();
     setOrder(data as Order | null);
