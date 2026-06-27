@@ -2,20 +2,45 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, LayoutDashboard, LogOut } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
+import { useProfile } from "@/hooks/useProfile";
+import { getDefaultPortal, ROLE_LABELS } from "@/lib/roles";
+import { createBrowserClient } from "@supabase/ssr";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const { itemCount, toggleCart } = useCartStore();
+  const { profile, loading: profileLoading } = useProfile();
   const count = itemCount();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!accountOpen) return;
+    const handler = () => setAccountOpen(false);
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [accountOpen]);
+
+  async function handleSignOut() {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  }
 
   const navLinks = [
     { href: "/products", label: "All Products" },
@@ -24,6 +49,11 @@ export function Navbar() {
     { href: "/products?category=audio", label: "Audio" },
     { href: "/products?category=wearables", label: "Wearables" },
   ];
+
+  const portalHref = profile ? getDefaultPortal(profile.role) : null;
+  const displayName = profile
+    ? profile.full_name || profile.username || profile.email.split("@")[0]
+    : null;
 
   return (
     <header
@@ -66,20 +96,77 @@ export function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
-            <button
-              aria-label="Search"
-              className="p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
-            >
+            <button aria-label="Search" className="p-2 text-obsidian-300 hover:text-gold-500 transition-colors">
               <Search size={20} />
             </button>
 
-            <Link
-              href="/auth/login"
-              aria-label="Account"
-              className="p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
-            >
-              <User size={20} />
-            </Link>
+            {/* Account — shows dropdown if logged in, link to login if not */}
+            {!profileLoading && (
+              <div className="relative">
+                {profile ? (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setAccountOpen(!accountOpen); }}
+                      className="flex items-center gap-1.5 p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
+                      aria-label="Account menu"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-gold-500/20 border border-gold-500/30 flex items-center justify-center">
+                        <span className="text-gold-400 text-xs font-bold">
+                          {displayName?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </button>
+
+                    {accountOpen && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 top-full mt-2 w-52 bg-obsidian-900 border border-obsidian-700 rounded-xl shadow-2xl overflow-hidden"
+                      >
+                        <div className="px-4 py-3 border-b border-obsidian-800">
+                          <p className="text-white text-sm font-medium truncate">{displayName}</p>
+                          <p className="text-obsidian-500 text-xs mt-0.5">{ROLE_LABELS[profile.role]}</p>
+                        </div>
+                        <div className="py-1">
+                          {portalHref && (
+                            <Link
+                              href={portalHref}
+                              onClick={() => setAccountOpen(false)}
+                              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian-200 hover:text-gold-400 hover:bg-obsidian-800 transition-colors"
+                            >
+                              <LayoutDashboard size={15} />
+                              {profile.role === "customer" ? "My Account" : "My Portal"}
+                            </Link>
+                          )}
+                          <Link
+                            href="/orders"
+                            onClick={() => setAccountOpen(false)}
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian-200 hover:text-gold-400 hover:bg-obsidian-800 transition-colors"
+                          >
+                            <ShoppingBag size={15} />
+                            My Orders
+                          </Link>
+                          <button
+                            onClick={handleSignOut}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-obsidian-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                          >
+                            <LogOut size={15} />
+                            Sign Out
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href="/auth/login"
+                    aria-label="Account"
+                    className="p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
+                  >
+                    <User size={20} />
+                  </Link>
+                )}
+              </div>
+            )}
 
             <button
               onClick={toggleCart}
@@ -120,14 +207,38 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="border-t border-obsidian-700 mt-2 pt-2">
-              <Link
-                href="/auth/login"
-                onClick={() => setMobileOpen(false)}
-                className="px-3 py-3 text-obsidian-100 hover:text-gold-500 hover:bg-obsidian-700 rounded-md text-sm font-medium tracking-wide transition-all flex items-center gap-2"
-              >
-                <User size={16} /> My Account
-              </Link>
+            <div className="border-t border-obsidian-700 mt-2 pt-2 space-y-1">
+              {profile ? (
+                <>
+                  <div className="px-3 py-2">
+                    <p className="text-obsidian-300 text-sm font-medium">{displayName}</p>
+                    <p className="text-obsidian-500 text-xs">{ROLE_LABELS[profile.role]}</p>
+                  </div>
+                  {portalHref && (
+                    <Link
+                      href={portalHref}
+                      onClick={() => setMobileOpen(false)}
+                      className="px-3 py-3 text-obsidian-100 hover:text-gold-500 hover:bg-obsidian-700 rounded-md text-sm font-medium transition-all flex items-center gap-2"
+                    >
+                      <LayoutDashboard size={16} /> My Portal
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                    className="w-full px-3 py-3 text-rose-400 hover:bg-rose-500/10 rounded-md text-sm font-medium transition-all flex items-center gap-2"
+                  >
+                    <LogOut size={16} /> Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="px-3 py-3 text-obsidian-100 hover:text-gold-500 hover:bg-obsidian-700 rounded-md text-sm font-medium tracking-wide transition-all flex items-center gap-2"
+                >
+                  <User size={16} /> Sign In / Register
+                </Link>
+              )}
             </div>
           </nav>
         </div>
