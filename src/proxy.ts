@@ -2,19 +2,37 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Routes requiring authentication (any role)
-const AUTH_REQUIRED = ["/admin", "/agent", "/delivery", "/orders", "/account"];
+// Routes that require the user to be logged in
+const AUTH_REQUIRED = ["/admin", "/agent", "/delivery", "/account"];
 
-// Routes that redirect authenticated users away (login/register pages)
-const AUTH_REDIRECT = ["/auth/login", "/auth/register"];
+// Auth pages — redirect logged-in users away from these
+const AUTH_PAGES = ["/auth/login", "/auth/register"];
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  const isProtected = AUTH_REQUIRED.some((p) => pathname.startsWith(p));
+  const isAuthPage  = AUTH_PAGES.some((p) => pathname === p);
+
+  // For public routes (home, products, cart, api, etc.) — pass straight through.
+  // This avoids an unnecessary DB round-trip on every public page request
+  // and prevents a Supabase misconfiguration from taking the whole site down.
+  if (!isProtected && !isAuthPage) {
+    return NextResponse.next({ request });
+  }
+
+  // Guard: if env vars are not yet configured, don't crash — just pass through.
+  // The individual server components/layouts will show their own auth errors.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.next({ request });
+  }
+
+  try {
+    let response = NextResponse.next({ request });
+
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -27,36 +45,30 @@ export async function proxy(request: NextRequest) {
           );
         },
       },
+    });
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user && isProtected) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/login";
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
     }
-  );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
-
-  // Unauthenticated → redirect to login if trying to access protected paths
-  if (!user) {
-    const needsAuth = AUTH_REQUIRED.some((p) => pathname.startsWith(p));
-    if (needsAuth) {
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = "/auth/login";
-      loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
+    if (user && isAuthPage) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      url.search = "";
+      return NextResponse.redirect(url);
     }
+
     return response;
+  } catch {
+    // If the auth check itself fails (e.g. network issue, bad key),
+    // let the request through — pages will handle auth on their own.
+    return NextResponse.next({ request });
   }
-
-  // Authenticated → redirect away from auth pages to appropriate portal
-  if (AUTH_REDIRECT.some((p) => pathname === p)) {
-    const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = "/";
-    homeUrl.search = "";
-    return NextResponse.redirect(homeUrl);
-  }
-
-  return response;
 }
 
 export const config = {
