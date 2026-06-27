@@ -9,8 +9,8 @@ async function getFeaturedProducts(): Promise<Product[]> {
   try {
     const supabase = await createClient();
     const { data } = await supabase
-      .from("shop_products")
-      .select("*, category:categories(*), images:shop_product_images(*)")
+      .from("products")
+      .select("*, category:categories(*), images:product_images(*)")
       .eq("is_featured", true)
       .eq("is_active", true)
       .order("created_at", { ascending: false })

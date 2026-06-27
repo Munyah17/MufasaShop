@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Create the order in Supabase
     const { data: order, error: orderError } = await supabase
-      .from("shop_orders")
+      .from("orders")
       .insert({
         customer_email,
         customer_name,
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Insert order items
-    await supabase.from("shop_order_items").insert(
+    await supabase.from("order_items").insert(
       items.map((item: {
         product_id: string;
         name: string;
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
 
     // 4. Store the stripe session id on the order
     await supabase
-      .from("shop_orders")
+      .from("orders")
       .update({ stripe_session_id: session.id })
       .eq("id", order.id);
 

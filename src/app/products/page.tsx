@@ -24,8 +24,8 @@ async function getProducts(params: {
   try {
     const supabase = await createClient();
     let query = supabase
-      .from("shop_products")
-      .select("*, category:categories(*), images:shop_product_images(*)", { count: "exact" })
+      .from("products")
+      .select("*, category:categories(*), images:product_images(*)", { count: "exact" })
       .eq("is_active", true);
 
     // Category filter: resolve slug → id first

@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
       if (session.payment_status === "paid") {
         const { error } = await supabase
-          .from("shop_orders")
+          .from("orders")
           .update({
             status: "paid",
             payment_status: "completed",
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       const orderId = session.metadata?.order_id;
       if (orderId) {
         await supabase
-          .from("shop_orders")
+          .from("orders")
           .update({ status: "cancelled", payment_status: "cancelled" })
           .eq("id", orderId);
         console.log(`[stripe webhook] Order ${orderId} cancelled (session expired)`);
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     case "payment_intent.payment_failed": {
       const pi = event.data.object as import("stripe").Stripe.PaymentIntent;
       await supabase
-        .from("shop_orders")
+        .from("orders")
         .update({ status: "failed", payment_status: "failed" })
         .eq("stripe_session_id", pi.id);
       console.log(`[stripe webhook] Payment failed for PI ${pi.id}`);
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       const charge = event.data.object as import("stripe").Stripe.Charge;
       const pi = charge.payment_intent as string;
       await supabase
-        .from("shop_orders")
+        .from("orders")
         .update({ status: "refunded", payment_status: "refunded" })
         .eq("payment_reference", pi);
       console.log(`[stripe webhook] Refund processed for charge ${charge.id}`);

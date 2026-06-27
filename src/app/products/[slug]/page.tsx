@@ -24,8 +24,8 @@ export default function ProductDetailPage() {
     async function load() {
       const supabase = createClient();
       const { data } = await supabase
-        .from("shop_products")
-        .select("*, category:categories(*), images:shop_product_images(*)")
+        .from("products")
+        .select("*, category:categories(*), images:product_images(*)")
         .eq("slug", slug)
         .eq("is_active", true)
         .single();
