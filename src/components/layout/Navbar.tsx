@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { ShoppingBag, Menu, X, Search, User, LayoutDashboard, LogOut } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import logo from "@/assets/mufasa-logo.png";
 import icon from "@/assets/mufasa-icon.png";
 import { useCartStore } from "@/lib/store/cartStore";
@@ -133,7 +134,7 @@ export function Navbar({ profile }: NavbarProps) {
                       className="absolute right-0 top-full mt-2 w-52 bg-obsidian-900 border border-obsidian-700 rounded-xl shadow-2xl overflow-hidden"
                     >
                       <div className="px-4 py-3 border-b border-obsidian-800">
-                        <p className="text-white text-sm font-medium truncate">{displayName}</p>
+                        <p className="text-obsidian-50 text-sm font-medium truncate">{displayName}</p>
                         <p className="text-obsidian-500 text-xs mt-0.5">{ROLE_LABELS[profile.role]}</p>
                       </div>
                       <div className="py-1">
@@ -177,6 +178,8 @@ export function Navbar({ profile }: NavbarProps) {
               )}
             </div>
 
+            <ThemeToggle />
+
             <button
               onClick={toggleCart}
               aria-label="Open cart"
@@ -184,7 +187,7 @@ export function Navbar({ profile }: NavbarProps) {
             >
               <ShoppingBag size={20} />
               {count > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-gold-500 text-obsidian-900 rounded-full text-[10px] font-bold flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-gold-500 text-zinc-950 rounded-full text-[10px] font-bold flex items-center justify-center">
                   {count > 99 ? "99+" : count}
                 </span>
               )}

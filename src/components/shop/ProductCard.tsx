@@ -85,7 +85,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Info */}
         <div className="p-4">
           {product.category && (
-            <p className="text-gold-600 text-[10px] font-semibold uppercase tracking-widest mb-1">
+            <p className="font-mono text-gold-600 text-[10px] font-semibold uppercase tracking-widest mb-1">
               {product.category.name}
             </p>
           )}
@@ -95,11 +95,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-gold-500 font-bold text-base">
+              <span className="font-mono text-gold-500 font-bold text-base">
                 ${product.price.toFixed(2)}
               </span>
               {product.compare_at_price && (
-                <span className="text-obsidian-500 text-xs line-through">
+                <span className="font-mono text-obsidian-500 text-xs line-through">
                   ${product.compare_at_price.toFixed(2)}
                 </span>
               )}

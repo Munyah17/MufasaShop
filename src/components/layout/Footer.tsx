@@ -46,7 +46,7 @@ export function Footer() {
 
           {/* Shop */}
           <div>
-            <h3 className="font-display text-gold-500 text-xs tracking-[0.2em] uppercase font-semibold mb-4">
+            <h3 className="font-mono text-gold-500 text-xs tracking-[0.2em] uppercase font-semibold mb-4">
               Shop
             </h3>
             <ul className="space-y-2">
@@ -72,7 +72,7 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="font-display text-gold-500 text-xs tracking-[0.2em] uppercase font-semibold mb-4">
+            <h3 className="font-mono text-gold-500 text-xs tracking-[0.2em] uppercase font-semibold mb-4">
               Support
             </h3>
             <ul className="space-y-2">
@@ -97,7 +97,7 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="font-display text-gold-500 text-xs tracking-[0.2em] uppercase font-semibold mb-4">
+            <h3 className="font-mono text-gold-500 text-xs tracking-[0.2em] uppercase font-semibold mb-4">
               Contact
             </h3>
             <ul className="space-y-3">
@@ -127,7 +127,7 @@ export function Footer() {
 
             {/* Payment methods accepted */}
             <div className="mt-6">
-              <p className="text-obsidian-500 text-xs uppercase tracking-widest mb-2">
+              <p className="font-mono text-obsidian-500 text-xs uppercase tracking-widest mb-2">
                 We Accept
               </p>
               <div className="flex gap-2">
@@ -147,14 +147,14 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-obsidian-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-obsidian-500 text-xs">
+          <p className="font-mono text-obsidian-500 text-xs">
             &copy; {new Date().getFullYear()} MUFASA Gadgets & Accessories. All rights reserved.
           </p>
           <div className="flex gap-4">
-            <Link href="/legal/privacy" className="text-obsidian-500 hover:text-gold-500 text-xs transition-colors">
+            <Link href="/legal/privacy" className="font-mono text-obsidian-500 hover:text-gold-500 text-xs transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/legal/terms" className="text-obsidian-500 hover:text-gold-500 text-xs transition-colors">
+            <Link href="/legal/terms" className="font-mono text-obsidian-500 hover:text-gold-500 text-xs transition-colors">
               Terms of Service
             </Link>
           </div>

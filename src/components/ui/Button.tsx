@@ -26,7 +26,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       "inline-flex items-center justify-center gap-2 font-semibold tracking-wide transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian-900 rounded-md";
 
     const variants = {
-      gold: "bg-gold-500 text-obsidian-900 hover:bg-gold-400 active:scale-[0.98] shadow-md hover:shadow-gold-500/20 hover:shadow-lg",
+      gold: "bg-gold-500 text-zinc-950 hover:bg-gold-400 active:scale-[0.98] shadow-md hover:shadow-gold-500/20 hover:shadow-lg",
       outline:
         "border border-gold-500 text-gold-500 hover:bg-gold-500/10 active:scale-[0.98]",
       ghost: "text-obsidian-300 hover:text-gold-500 hover:bg-obsidian-800",

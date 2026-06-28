@@ -87,7 +87,7 @@ function ProductSection({
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
       <div className="flex items-end justify-between mb-8 sm:mb-10">
         <div>
-          <p className="text-gold-500 text-[11px] font-semibold uppercase tracking-[0.25em] mb-2">
+          <p className="font-mono text-gold-500 text-[11px] font-semibold uppercase tracking-[0.25em] mb-2">
             {subtitle}
           </p>
           <h2 className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl text-obsidian-50 leading-tight">
@@ -157,7 +157,7 @@ export default async function HomePage() {
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
             {/* Text */}
             <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold-500/25 bg-gold-500/8 text-gold-400 text-[11px] font-semibold tracking-[0.2em] uppercase mb-7">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold-500/25 bg-gold-500/8 text-gold-400 text-[11px] font-mono font-semibold tracking-[0.2em] uppercase mb-7">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse" />
                 Premium Tech Collection 2026
               </div>
@@ -174,7 +174,7 @@ export default async function HomePage() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                 <Link
                   href="/products"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gold-500 text-obsidian-900 rounded-lg font-semibold text-sm hover:bg-gold-400 transition-all hover:shadow-lg hover:shadow-gold-500/20 active:scale-[0.98]"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-gold-500 text-zinc-950 rounded-lg font-semibold text-sm hover:bg-gold-400 transition-all hover:shadow-lg hover:shadow-gold-500/20 active:scale-[0.98]"
                 >
                   Shop Now <ArrowRight size={16} />
                 </Link>
@@ -193,8 +193,8 @@ export default async function HomePage() {
                   { val: "100%", label: "Authentic" },
                 ].map((stat) => (
                   <div key={stat.label}>
-                    <div className="font-display font-bold text-xl text-obsidian-50">{stat.val}</div>
-                    <div className="text-obsidian-500 text-xs uppercase tracking-[0.15em] mt-0.5">{stat.label}</div>
+                    <div className="font-mono font-bold text-xl text-obsidian-50">{stat.val}</div>
+                    <div className="font-mono text-obsidian-500 text-xs uppercase tracking-[0.15em] mt-0.5">{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -242,7 +242,7 @@ export default async function HomePage() {
       {/* ── Categories ────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
         <div className="mb-10">
-          <p className="text-gold-500 text-[11px] font-semibold uppercase tracking-[0.25em] mb-2">
+          <p className="font-mono text-gold-500 text-[11px] font-semibold uppercase tracking-[0.25em] mb-2">
             Browse by Category
           </p>
           <h2 className="font-display font-bold text-2xl sm:text-3xl text-obsidian-50">
@@ -315,7 +315,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-t border-obsidian-800 py-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.07),transparent_70%)]" />
         <div className="relative max-w-2xl mx-auto px-4 text-center">
-          <p className="text-gold-500 text-[11px] font-semibold uppercase tracking-[0.25em] mb-4">
+          <p className="font-mono text-gold-500 text-[11px] font-semibold uppercase tracking-[0.25em] mb-4">
             Join MUFASA
           </p>
           <h2 className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl text-obsidian-50 mb-4 leading-tight tracking-tight">
@@ -327,7 +327,7 @@ export default async function HomePage() {
           </p>
           <Link
             href="/auth/register"
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gold-500 text-obsidian-900 rounded-lg font-semibold text-sm hover:bg-gold-400 transition-all hover:shadow-xl hover:shadow-gold-500/20"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gold-500 text-zinc-950 rounded-lg font-semibold text-sm hover:bg-gold-400 transition-all hover:shadow-xl hover:shadow-gold-500/20"
           >
             Create Free Account <ArrowRight size={16} />
           </Link>

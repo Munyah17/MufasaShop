@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex min-h-screen bg-obsidian-950">
+    <div className="portal-dark flex min-h-screen bg-obsidian-950">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex">
         <AdminSidebar profile={profile} />

@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
+/* ── Tailwind v4: dark mode driven by .dark class on <html> ── */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  /* ── Gold palette ──────────────────────────────────────── */
+  /* ── Gold palette ──────────────────────────────────────────── */
   --color-gold-50:  #fefce8;
   --color-gold-100: #fef9c3;
   --color-gold-200: #fde68a;
@@ -13,7 +16,7 @@
   --color-gold-800: #7a5c00;
   --color-gold-900: #4a3800;
 
-  /* ── Zinc palette (replaces "obsidian" — same keys, cleaner neutrals) ── */
+  /* ── Obsidian neutrals — these base values are overridden per-theme below ── */
   --color-obsidian-50:  #fafafa;
   --color-obsidian-100: #f4f4f5;
   --color-obsidian-200: #e4e4e7;
@@ -26,51 +29,88 @@
   --color-obsidian-900: #09090b;
   --color-obsidian-950: #050506;
 
-  /* ── Typography — Inter for everything (clean, minimal, industry-standard) ── */
-  --font-display: var(--font-inter);
-  --font-sans:    var(--font-inter);
+  /* ── Typography ────────────────────────────────────────────── */
+  --font-display: var(--font-heading);   /* Space Grotesk   */
+  --font-sans:    var(--font-body);      /* IBM Plex Sans   */
+  --font-mono:    var(--font-mono-accent); /* IBM Plex Mono */
 }
 
-/* ── CSS custom properties ────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   LIGHT MODE  (default — inverted obsidian scale)
+   50  = near-black text     950 = white page background
+   ───────────────────────────────────────────────────────────── */
 :root {
+  color-scheme: light;
+  --color-obsidian-50:  #09090b;  /* body text */
+  --color-obsidian-100: #18181b;
+  --color-obsidian-200: #27272a;
+  --color-obsidian-300: #3f3f46;
+  --color-obsidian-400: #52525b;
+  --color-obsidian-500: #71717a;  /* muted — stays neutral */
+  --color-obsidian-600: #a1a1aa;
+  --color-obsidian-700: #e4e4e7;  /* light borders */
+  --color-obsidian-800: #f4f4f5;  /* card bg */
+  --color-obsidian-900: #fafafa;  /* panel bg */
+  --color-obsidian-950: #ffffff;  /* page bg */
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DARK MODE  (original obsidian dark values)
+   ───────────────────────────────────────────────────────────── */
+.dark {
   color-scheme: dark;
-  --bg:        #09090b;
-  --bg-card:   #18181b;
-  --bg-subtle: #27272a;
-  --border:    #27272a;
-  --text:      #fafafa;
-  --text-muted: #a1a1aa;
-  --gold:      #d4af37;
-  --gold-light: #f5c518;
-  --radius:    8px;
+  --color-obsidian-50:  #fafafa;
+  --color-obsidian-100: #f4f4f5;
+  --color-obsidian-200: #e4e4e7;
+  --color-obsidian-300: #a1a1aa;
+  --color-obsidian-400: #71717a;
+  --color-obsidian-500: #52525b;
+  --color-obsidian-600: #3f3f46;
+  --color-obsidian-700: #27272a;
+  --color-obsidian-800: #18181b;
+  --color-obsidian-900: #09090b;
+  --color-obsidian-950: #050506;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-    --bg:        #ffffff;
-    --bg-card:   #ffffff;
-    --bg-subtle: #f4f4f5;
-    --border:    #e4e4e7;
-    --text:      #09090b;
-    --text-muted: #71717a;
-  }
+/* ─────────────────────────────────────────────────────────────
+   PORTAL DARK  — pin dark palette inside admin/agent/delivery
+   layouts regardless of the global theme toggle.
+   ───────────────────────────────────────────────────────────── */
+.portal-dark {
+  color-scheme: dark;
+  --color-obsidian-50:  #fafafa;
+  --color-obsidian-100: #f4f4f5;
+  --color-obsidian-200: #e4e4e7;
+  --color-obsidian-300: #a1a1aa;
+  --color-obsidian-400: #71717a;
+  --color-obsidian-500: #52525b;
+  --color-obsidian-600: #3f3f46;
+  --color-obsidian-700: #27272a;
+  --color-obsidian-800: #18181b;
+  --color-obsidian-900: #09090b;
+  --color-obsidian-950: #050506;
 }
 
-* { box-sizing: border-box; }
+/* ── Base ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--color-obsidian-950);
+  color: var(--color-obsidian-50);
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.2s ease;
 }
 
-/* ── Gold shimmer (hero text accent) ───────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading), sans-serif;
+}
+
+/* ── Gold shimmer (hero text accent) ─────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position:  200% center; }
@@ -92,20 +132,23 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-/* ── Card hover ─────────────────────────────────────────────── */
+/* ── Card hover ───────────────────────────────────────────────── */
 .card-hover {
   transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.2);
-  border-color: rgba(212, 175, 55, 0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(212,175,55,0.25);
+  border-color: rgba(212,175,55,0.35);
+}
+.dark .card-hover:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,175,55,0.2);
 }
 
-/* ── Scrollbar ──────────────────────────────────────────────── */
+/* ── Scrollbar ────────────────────────────────────────────────── */
 ::-webkit-scrollbar        { width: 5px; }
-::-webkit-scrollbar-track  { background: #09090b; }
-::-webkit-scrollbar-thumb  { background: #3f3f46; border-radius: 3px; }
+::-webkit-scrollbar-track  { background: var(--color-obsidian-950); }
+::-webkit-scrollbar-thumb  { background: var(--color-obsidian-600); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
 
-::selection { background: rgba(212, 175, 55, 0.25); color: #f5c518; }
+::selection { background: rgba(212,175,55,0.2); color: #c9a84c; }

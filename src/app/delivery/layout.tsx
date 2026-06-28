@@ -38,7 +38,7 @@ export default async function DeliveryLayout({ children }: { children: React.Rea
   ];
 
   return (
-    <div className="flex min-h-screen bg-obsidian-950">
+    <div className="portal-dark flex min-h-screen bg-obsidian-950">
       <aside className="hidden lg:flex flex-col w-60 bg-obsidian-950 border-r border-gold-500/15">
         <div className="p-4 border-b border-gold-500/15">
           <Link href="/" className="flex items-center gap-2">

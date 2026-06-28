@@ -1,15 +1,29 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { NavbarWrapper } from "@/components/layout/NavbarWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { Providers } from "./providers";
 
-const inter = Inter({
-  variable: "--font-inter",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-mono-accent",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -28,18 +42,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full`}
+      className={`${spaceGrotesk.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-obsidian-900 text-obsidian-50 antialiased">
+      <body className="min-h-full flex flex-col antialiased">
         <Providers>
           <NavbarWrapper />
           <CartDrawer />

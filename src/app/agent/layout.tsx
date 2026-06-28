@@ -39,7 +39,7 @@ export default async function AgentLayout({ children }: { children: React.ReactN
   ];
 
   return (
-    <div className="flex min-h-screen bg-obsidian-950">
+    <div className="portal-dark flex min-h-screen bg-obsidian-950">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col w-60 bg-obsidian-950 border-r border-gold-500/15">
         <div className="p-4 border-b border-gold-500/15">
