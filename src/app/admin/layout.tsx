@@ -1,5 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { hasPermission } from "@/lib/roles";
@@ -7,23 +6,14 @@ import { hasPermission } from "@/lib/roles";
 export const metadata = { title: "Admin Panel | MUFASA" };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() {},
-      },
-    }
-  );
-
+  // Auth check: anon key is sufficient for supabase.auth.getUser()
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login?redirect=/admin/dashboard");
 
-  const { data: profile } = await supabase
+  // Data query: service_role bypasses RLS (deny-all policy)
+  const admin = createAdminClient();
+  const { data: profile } = await admin
     .from("profiles")
     .select("full_name, email, role, username")
     .eq("id", user.id)

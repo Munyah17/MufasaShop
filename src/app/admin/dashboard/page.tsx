@@ -1,9 +1,7 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import {
-  ShoppingBag, TrendingUp, Package, Users, MapPin, Truck,
-  Clock, CheckCircle2, AlertCircle, DollarSign,
+  ShoppingBag, Package, Users, DollarSign,
 } from "lucide-react";
 import { hasPermission } from "@/lib/roles";
 import type { Role } from "@/types";
@@ -12,7 +10,7 @@ function StatCard({
   label, value, sub, icon: Icon, color,
 }: { label: string; value: string; sub: string; icon: React.FC<{ size?: number; className?: string }>; color: string }) {
   return (
-    <div className={`bg-obsidian-900 border border-obsidian-800 rounded-xl p-5 flex items-start gap-4`}>
+    <div className="bg-obsidian-900 border border-obsidian-800 rounded-xl p-5 flex items-start gap-4">
       <div className={`p-2.5 rounded-lg ${color}`}>
         <Icon size={20} />
       </div>
@@ -26,17 +24,18 @@ function StatCard({
 }
 
 export default async function AdminDashboard() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll() { return cookieStore.getAll(); }, setAll() {} } }
-  );
-
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const { data: profile } = await supabase.from("profiles").select("full_name, role, username").eq("id", user.id).single();
+  const admin = createAdminClient();
+
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("full_name, role, username")
+    .eq("id", user.id)
+    .single();
+
   if (!profile) redirect("/auth/login");
 
   const role = profile.role as Role;
@@ -44,25 +43,27 @@ export default async function AdminDashboard() {
   const displayName = profile.full_name || profile.username || "Staff";
   const today = new Date().toISOString().split("T")[0];
 
-  // Fetch stats
   const [ordersRes, productsRes, staffRes, agentsRes] = await Promise.all([
-    supabase.from("orders").select("id, status, total, created_at", { count: "exact" }),
-    supabase.from("products").select("id, is_active, stock_quantity", { count: "exact" }),
-    supabase.from("profiles").select("id, role", { count: "exact" }).neq("role", "customer"),
-    supabase.from("agent_profiles").select("id", { count: "exact" }),
+    admin.from("orders").select("id, status, total, created_at", { count: "exact" }),
+    admin.from("products").select("id, is_active, stock_quantity", { count: "exact" }),
+    admin.from("profiles").select("id, role", { count: "exact" }).neq("role", "customer"),
+    admin.from("agent_profiles").select("id", { count: "exact" }),
   ]);
 
   const orders = ordersRes.data ?? [];
   const products = productsRes.data ?? [];
 
   const todayOrders = orders.filter((o) => o.created_at?.startsWith(today));
-  const pendingOrders = orders.filter((o) => ["pending", "awaiting_payment", "paid", "processing"].includes(o.status));
-  const totalRevenue = orders.filter((o) => o.status === "paid" || o.status === "delivered")
+  const pendingOrders = orders.filter((o) =>
+    ["pending", "awaiting_payment", "paid", "processing"].includes(o.status)
+  );
+  const totalRevenue = orders
+    .filter((o) => o.status === "paid" || o.status === "delivered")
     .reduce((s, o) => s + (o.total ?? 0), 0);
   const activeProducts = products.filter((p) => p.is_active).length;
   const lowStock = products.filter((p) => p.is_active && p.stock_quantity < 5).length;
 
-  const recentOrders = orders
+  const recentOrders = [...orders]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 8);
 
@@ -80,17 +81,17 @@ export default async function AdminDashboard() {
 
   return (
     <div className="p-6 lg:p-8 min-h-screen">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-display font-bold text-white">
           Welcome back, {displayName}
         </h1>
         <p className="text-obsidian-400 mt-1 text-sm">
-          {new Date().toLocaleDateString("en-ZW", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          {new Date().toLocaleDateString("en-ZW", {
+            weekday: "long", year: "numeric", month: "long", day: "numeric",
+          })}
         </p>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <StatCard
           label="Today's Orders"
@@ -124,7 +125,6 @@ export default async function AdminDashboard() {
         />
       </div>
 
-      {/* Recent Orders */}
       <div className="bg-obsidian-900 border border-obsidian-800 rounded-xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-obsidian-800">
           <h2 className="text-white font-semibold">Recent Orders</h2>
@@ -159,7 +159,9 @@ export default async function AdminDashboard() {
                       ${order.total?.toFixed(2)}
                     </span>
                   )}
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColor[order.status] ?? "text-obsidian-400 bg-obsidian-800"}`}>
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                    statusColor[order.status] ?? "text-obsidian-400 bg-obsidian-800"
+                  }`}>
                     {order.status.replace("_", " ")}
                   </span>
                 </div>

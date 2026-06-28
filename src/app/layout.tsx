@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Cinzel, Inter } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
+import { NavbarWrapper } from "@/components/layout/NavbarWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { Providers } from "./providers";
@@ -47,7 +47,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-obsidian-900 text-obsidian-50 antialiased">
         <Providers>
-          <Navbar />
+          <NavbarWrapper />
           <CartDrawer />
           <main className="flex-1">{children}</main>
           <Footer />

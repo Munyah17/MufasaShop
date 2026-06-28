@@ -1,5 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { MapPin } from "lucide-react";
 import { hasPermission } from "@/lib/roles";
@@ -8,20 +7,21 @@ import type { Role } from "@/types";
 export const metadata = { title: "Agents | MUFASA Admin" };
 
 export default async function AgentsPage() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll() { return cookieStore.getAll(); }, setAll() {} } }
-  );
-
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  const { data: me } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const admin = createAdminClient();
+
+  const { data: me } = await admin
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
   if (!me || !hasPermission(me.role as Role, "agents:read")) redirect("/admin/dashboard");
 
-  const { data: agents } = await supabase
+  const { data: agents } = await admin
     .from("agent_profiles")
     .select("*, profile:profiles(id, full_name, email, phone, status, username)")
     .order("created_at", { ascending: false });
@@ -49,7 +49,6 @@ export default async function AgentsPage() {
         )}
       </div>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: "Total Agents", value: agents?.length ?? 0, color: "text-gold-400" },
@@ -64,7 +63,6 @@ export default async function AgentsPage() {
         ))}
       </div>
 
-      {/* Agents table */}
       <div className="bg-obsidian-900 border border-obsidian-800 rounded-xl overflow-hidden">
         {!agents || agents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
@@ -95,7 +93,7 @@ export default async function AgentsPage() {
                     <tr key={agent.id} className="hover:bg-obsidian-800/40 transition-colors">
                       <td className="px-5 py-3.5">
                         <p className="text-obsidian-200 font-medium">{displayName}</p>
-                        <p className="text-obsidian-500 text-xs">{(profile as { email?: string } | null)?.email}</p>
+                        <p className="text-obsidian-500 text-xs">{(p as { email?: string } | null)?.email}</p>
                       </td>
                       <td className="px-5 py-3.5">
                         <p className="text-obsidian-300 text-sm">{agent.territory}</p>

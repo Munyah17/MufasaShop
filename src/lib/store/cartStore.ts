@@ -71,6 +71,8 @@ export const useCartStore = create<CartStore>()(
     {
       name: "mufasa-cart",
       partialize: (state) => ({ items: state.items }),
+      // Prevents SSR/client hydration mismatch — Providers.tsx rehydrates after mount.
+      skipHydration: true,
     }
   )
 );

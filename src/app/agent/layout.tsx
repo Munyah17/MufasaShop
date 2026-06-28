@@ -1,5 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { MapPin, LayoutDashboard, ShoppingBag, TrendingUp, PlusCircle, LogOut } from "lucide-react";
@@ -7,17 +6,13 @@ import { MapPin, LayoutDashboard, ShoppingBag, TrendingUp, PlusCircle, LogOut } 
 export const metadata = { title: "Agent Portal | MUFASA" };
 
 export default async function AgentLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll() { return cookieStore.getAll(); }, setAll() {} } }
-  );
-
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login?redirect=/agent/dashboard");
 
-  const { data: profile } = await supabase
+  const admin = createAdminClient();
+
+  const { data: profile } = await admin
     .from("profiles")
     .select("role, full_name, username, email")
     .eq("id", user.id)
@@ -25,7 +20,7 @@ export default async function AgentLayout({ children }: { children: React.ReactN
 
   if (!profile || profile.role !== "agent") redirect("/?error=unauthorized");
 
-  const { data: agentProfile } = await supabase
+  const { data: agentProfile } = await admin
     .from("agent_profiles")
     .select("territory, town, wallet_balance")
     .eq("id", user.id)
@@ -42,7 +37,6 @@ export default async function AgentLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen bg-obsidian-950">
-      {/* Sidebar */}
       <aside className="hidden lg:flex flex-col w-60 bg-obsidian-950 border-r border-gold-500/15">
         <div className="p-4 border-b border-gold-500/15">
           <Link href="/" className="flex items-center gap-2">

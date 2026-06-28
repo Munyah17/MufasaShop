@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { PlusCircle, Trash2, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { createBrowserClient } from "@supabase/ssr";
 
 interface ProductListing {
   id: string;
@@ -24,31 +23,40 @@ export default function NewAgentSalePage() {
   const [products, setProducts] = useState<ProductListing[]>([]);
   const [agentMarkup, setAgentMarkup] = useState(20);
   const [items, setItems] = useState<SaleItem[]>([]);
-  const [form, setForm] = useState({ customer_name: "", customer_phone: "", payment_method: "cash", notes: "" });
+  const [form, setForm] = useState({
+    customer_name: "", customer_phone: "", payment_method: "cash", notes: "",
+  });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    Promise.all([
-      supabase.from("products").select("id, name, price, stock_quantity").eq("is_active", true).gt("stock_quantity", 0).order("name"),
-      supabase.from("agent_profiles").select("markup_percentage").eq("id", (async () => (await supabase.auth.getUser()).data.user?.id)()).single(),
-    ]).then(([prodRes, agentRes]) => {
-      setProducts(prodRes.data ?? []);
-      if (agentRes.data) setAgentMarkup(agentRes.data.markup_percentage);
-    });
+    // Data fetched via backend API route — no client-side DB access.
+    fetch("/api/agent/products")
+      .then((r) => r.json())
+      .then(({ products: p, markup_percentage: m }) => {
+        setProducts(p ?? []);
+        if (typeof m === "number") setAgentMarkup(m);
+      })
+      .catch(() => setError("Failed to load products"));
   }, []);
 
   function addProduct(product: ProductListing) {
     setItems((prev) => {
       const existing = prev.find((i) => i.product_id === product.id);
-      if (existing) return prev.map((i) => i.product_id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+      if (existing) {
+        return prev.map((i) =>
+          i.product_id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+        );
+      }
       const salePrice = product.price * (1 + agentMarkup / 100);
-      return [...prev, { product_id: product.id, product_name: product.name, base_price: product.price, sale_price: salePrice, quantity: 1 }];
+      return [...prev, {
+        product_id: product.id,
+        product_name: product.name,
+        base_price: product.price,
+        sale_price: salePrice,
+        quantity: 1,
+      }];
     });
   }
 
@@ -57,7 +65,9 @@ export default function NewAgentSalePage() {
   }
 
   function updateSalePrice(productId: string, newPrice: number) {
-    setItems((prev) => prev.map((i) => i.product_id === productId ? { ...i, sale_price: newPrice } : i));
+    setItems((prev) =>
+      prev.map((i) => i.product_id === productId ? { ...i, sale_price: newPrice } : i)
+    );
   }
 
   const baseTotal = items.reduce((s, i) => s + i.base_price * i.quantity, 0);
@@ -86,10 +96,13 @@ export default function NewAgentSalePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSuccess("Sale recorded successfully!");
-      setItems([]); setForm({ customer_name: "", customer_phone: "", payment_method: "cash", notes: "" });
+      setItems([]);
+      setForm({ customer_name: "", customer_phone: "", payment_method: "cash", notes: "" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to record sale");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -103,7 +116,9 @@ export default function NewAgentSalePage() {
         <div>
           <h2 className="text-obsidian-300 text-sm font-semibold mb-3">Add Products</h2>
           <div className="bg-obsidian-900 border border-obsidian-800 rounded-xl max-h-80 overflow-y-auto divide-y divide-obsidian-800">
-            {products.map((product) => (
+            {products.length === 0 ? (
+              <p className="text-obsidian-500 text-sm text-center py-8">Loading products…</p>
+            ) : products.map((product) => (
               <button
                 key={product.id}
                 type="button"
@@ -124,7 +139,7 @@ export default function NewAgentSalePage() {
             ))}
           </div>
 
-          {/* Cart */}
+          {/* Cart items */}
           <div className="mt-4 space-y-2">
             {items.map((item) => (
               <div key={item.product_id} className="bg-obsidian-900 border border-obsidian-800 rounded-xl p-4">
@@ -140,7 +155,12 @@ export default function NewAgentSalePage() {
                     <input
                       type="number" min={1}
                       value={item.quantity}
-                      onChange={(e) => setItems((prev) => prev.map((i) => i.product_id === item.product_id ? { ...i, quantity: parseInt(e.target.value) || 1 } : i))}
+                      onChange={(e) => setItems((prev) =>
+                        prev.map((i) => i.product_id === item.product_id
+                          ? { ...i, quantity: parseInt(e.target.value) || 1 }
+                          : i
+                        )
+                      )}
                       className="w-full bg-obsidian-800 border border-obsidian-700 rounded px-2 py-1.5 text-sm text-white mt-1"
                     />
                   </div>
@@ -162,7 +182,6 @@ export default function NewAgentSalePage() {
             ))}
           </div>
 
-          {/* Totals */}
           {items.length > 0 && (
             <div className="mt-4 bg-obsidian-900 border border-gold-500/20 rounded-xl p-4 space-y-1">
               <div className="flex justify-between text-sm">
