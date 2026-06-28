@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Menu } from "lucide-react";
 import { AdminSidebar } from "./AdminSidebar";
 import type { Profile } from "@/types";
+import icon from "@/assets/mufasa-icon.png";
 
 interface Props {
   profile: Pick<Profile, "full_name" | "email" | "role" | "username">;
@@ -23,9 +25,7 @@ export function AdminMobileWrapper({ profile }: Props) {
         >
           <Menu size={20} />
         </button>
-        <span className="font-display font-bold text-gold-500 text-sm tracking-widest uppercase">
-          Admin
-        </span>
+        <Image src={icon} alt="MUFASA" width={26} height={26} className="rounded-sm object-contain" />
       </div>
 
       {/* Slide-over overlay */}

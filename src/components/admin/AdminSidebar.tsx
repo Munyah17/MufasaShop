@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import icon from "@/assets/mufasa-icon.png";
 import {
   LayoutDashboard, ShoppingBag, Package, Users, MapPin,
   Truck, Store, BarChart3, Settings, LogOut, ChevronLeft,
@@ -36,9 +38,7 @@ export function AdminSidebar({ profile, onClose }: AdminSidebarProps) {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gold-500/15">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 bg-gold-500 rounded-sm flex items-center justify-center group-hover:bg-gold-400 transition-colors">
-            <span className="text-obsidian-900 font-display font-black text-xs">M</span>
-          </div>
+          <Image src={icon} alt="MUFASA" width={28} height={28} className="rounded-sm object-contain" />
           <span className="font-display font-bold text-gold-500 text-sm tracking-wider uppercase">
             Mufasa
           </span>

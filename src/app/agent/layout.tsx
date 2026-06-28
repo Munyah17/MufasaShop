@@ -1,8 +1,10 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { MapPin, LayoutDashboard, ShoppingBag, TrendingUp, PlusCircle, LogOut } from "lucide-react";
+import Image from "next/image";
+import { LayoutDashboard, ShoppingBag, TrendingUp, PlusCircle, LogOut } from "lucide-react";
 import { AgentMobileNav } from "@/components/agent/AgentMobileNav";
+import icon from "@/assets/mufasa-icon.png";
 
 export const metadata = { title: "Agent Portal | MUFASA" };
 
@@ -42,9 +44,7 @@ export default async function AgentLayout({ children }: { children: React.ReactN
       <aside className="hidden lg:flex flex-col w-60 bg-obsidian-950 border-r border-gold-500/15">
         <div className="p-4 border-b border-gold-500/15">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-gold-500 rounded-sm flex items-center justify-center">
-              <span className="text-obsidian-900 font-display font-black text-xs">M</span>
-            </div>
+            <Image src={icon} alt="MUFASA" width={28} height={28} className="rounded-sm object-contain" />
             <span className="font-display font-bold text-gold-500 text-sm tracking-wider">MUFASA</span>
           </Link>
           <div className="mt-3">

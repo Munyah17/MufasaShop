@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, X, LogOut } from "lucide-react";
+import icon from "@/assets/mufasa-icon.png";
 
 interface NavItem {
   href: string;
@@ -49,7 +51,7 @@ export function AgentMobileNav({ displayName, walletBalance, town, navItems }: P
           <div className="relative w-64 h-full bg-obsidian-950 border-r border-gold-500/15 flex flex-col shadow-2xl overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gold-500/15">
-              <span className="font-display font-bold text-gold-500 text-sm tracking-wider uppercase">MUFASA</span>
+              <Image src={icon} alt="MUFASA" width={26} height={26} className="rounded-sm object-contain" />
               <button onClick={() => setOpen(false)} className="p-1 text-obsidian-400 hover:text-white transition-colors">
                 <X size={18} />
               </button>

@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { ShoppingBag, Menu, X, Search, User, LayoutDashboard, LogOut } from "lucide-react";
+import logo from "@/assets/mufasa-logo.png";
+import icon from "@/assets/mufasa-icon.png";
 import { useCartStore } from "@/lib/store/cartStore";
 import { getDefaultPortal, ROLE_LABELS } from "@/lib/roles";
 import { useRouter } from "next/navigation";
@@ -69,18 +72,23 @@ export function Navbar({ profile }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-gold-500 rounded-sm flex items-center justify-center group-hover:bg-gold-400 transition-colors">
-              <span className="text-obsidian-900 font-display font-black text-sm">M</span>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-display font-bold text-gold-500 text-sm tracking-widest uppercase">
-                Mufasa
-              </span>
-              <span className="text-obsidian-200 text-[9px] tracking-[0.2em] uppercase">
-                Gadgets &amp; Accessories
-              </span>
-            </div>
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <Image
+              src={icon}
+              alt="MUFASA icon"
+              width={32}
+              height={32}
+              className="rounded-sm object-contain sm:hidden"
+              priority
+            />
+            <Image
+              src={logo}
+              alt="MUFASA Gadgets"
+              width={140}
+              height={36}
+              className="hidden sm:block object-contain object-left"
+              priority
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -204,7 +212,7 @@ export function Navbar({ profile }: NavbarProps) {
           {/* Drawer from right */}
           <div className="absolute right-0 top-0 h-full w-72 max-w-[85vw] bg-obsidian-900 border-l border-obsidian-700 flex flex-col shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-obsidian-800">
-              <span className="font-display font-bold text-gold-500 text-sm tracking-widest uppercase">Menu</span>
+              <Image src={icon} alt="MUFASA" width={26} height={26} className="rounded-sm object-contain" />
               <button onClick={() => setMobileOpen(false)} className="p-1 text-obsidian-400 hover:text-white transition-colors">
                 <X size={20} />
               </button>

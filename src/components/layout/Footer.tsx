@@ -1,5 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Phone, MapPin, Instagram, Twitter, Facebook } from "lucide-react";
+import logo from "@/assets/mufasa-logo.png";
 
 export function Footer() {
   return (
@@ -11,13 +13,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gold-500 rounded-sm flex items-center justify-center">
-                <span className="text-obsidian-900 font-display font-black text-sm">M</span>
-              </div>
-              <span className="font-display font-bold text-gold-500 tracking-widest uppercase">
-                Mufasa
-              </span>
+            <div className="flex items-center">
+              <Image
+                src={logo}
+                alt="MUFASA Gadgets"
+                width={130}
+                height={32}
+                className="object-contain object-left"
+              />
             </div>
             <p className="text-obsidian-400 text-sm leading-relaxed">
               Premium tech accessories and gadgets for the discerning professional. Where

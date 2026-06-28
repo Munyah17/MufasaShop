@@ -1,5 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Shield, Truck, RefreshCw, Zap } from "lucide-react";
+import logo from "@/assets/mufasa-logo.png";
 import { createClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/shop/ProductCard";
 import type { Product } from "@/types";
@@ -215,14 +217,15 @@ export default async function HomePage() {
             <div className="flex-1 flex justify-center lg:justify-end">
               <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
                 <div className="absolute inset-0 rounded-full bg-gold-500/8 blur-3xl" />
-                <div className="relative w-full h-full rounded-2xl border border-obsidian-700 bg-obsidian-900/60 backdrop-blur-sm flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-5xl mb-4">⚡</div>
-                    <p className="font-display font-bold text-gold-500 text-sm tracking-[0.2em] uppercase">
-                      Premium Tech
-                    </p>
-                    <p className="text-obsidian-500 text-xs mt-1">Zimbabwe&apos;s finest gadgets</p>
-                  </div>
+                <div className="relative w-full h-full rounded-2xl border border-obsidian-700 bg-obsidian-900/60 backdrop-blur-sm flex items-center justify-center p-8">
+                  <Image
+                    src={logo}
+                    alt="MUFASA Gadgets"
+                    width={220}
+                    height={80}
+                    className="object-contain w-full max-w-[220px]"
+                    priority
+                  />
                 </div>
               </div>
             </div>

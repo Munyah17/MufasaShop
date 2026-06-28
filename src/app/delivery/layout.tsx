@@ -1,23 +1,20 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Truck, LayoutDashboard, Package, History, LogOut } from "lucide-react";
+import icon from "@/assets/mufasa-icon.png";
 
 export const metadata = { title: "Delivery Portal | MUFASA" };
 
 export default async function DeliveryLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll() { return cookieStore.getAll(); }, setAll() {} } }
-  );
-
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login?redirect=/delivery/dashboard");
 
-  const { data: profile } = await supabase
+  const admin = createAdminClient();
+
+  const { data: profile } = await admin
     .from("profiles")
     .select("role, full_name, username, email")
     .eq("id", user.id)
@@ -25,7 +22,7 @@ export default async function DeliveryLayout({ children }: { children: React.Rea
 
   if (!profile || profile.role !== "delivery") redirect("/?error=unauthorized");
 
-  const { data: deliveryProfile } = await supabase
+  const { data: deliveryProfile } = await admin
     .from("delivery_profiles")
     .select("vehicle_type, zone, is_available, total_deliveries, total_earnings")
     .eq("id", user.id)
@@ -45,9 +42,7 @@ export default async function DeliveryLayout({ children }: { children: React.Rea
       <aside className="hidden lg:flex flex-col w-60 bg-obsidian-950 border-r border-gold-500/15">
         <div className="p-4 border-b border-gold-500/15">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-gold-500 rounded-sm flex items-center justify-center">
-              <span className="text-obsidian-900 font-display font-black text-xs">M</span>
-            </div>
+            <Image src={icon} alt="MUFASA" width={28} height={28} className="rounded-sm object-contain" />
             <span className="font-display font-bold text-gold-500 text-sm tracking-wider">MUFASA</span>
           </Link>
           <p className="text-xs font-bold text-rose-400 uppercase tracking-wider mt-3">Delivery Portal</p>
