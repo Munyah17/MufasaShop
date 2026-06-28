@@ -70,15 +70,19 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {/* Add to cart overlay */}
-          {product.stock_quantity > 0 && (
+          {/* Add to cart — always visible at bottom of image */}
+          {product.stock_quantity > 0 ? (
             <button
               onClick={handleAddToCart}
-              className="absolute inset-x-0 bottom-0 py-3 bg-gold-500 text-obsidian-900 text-sm font-semibold flex items-center justify-center gap-2 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+              className="absolute inset-x-0 bottom-0 py-2.5 bg-gold-500 text-zinc-950 text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-gold-400 transition-colors duration-150"
             >
-              <ShoppingBag size={15} />
+              <ShoppingBag size={13} />
               Add to Cart
             </button>
+          ) : (
+            <div className="absolute inset-x-0 bottom-0 py-2.5 bg-obsidian-700/80 text-obsidian-400 text-xs font-semibold flex items-center justify-center">
+              Out of Stock
+            </div>
           )}
         </div>
 

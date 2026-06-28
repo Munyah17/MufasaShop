@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { CheckCircle, Clock, XCircle, Package, ArrowRight, RefreshCw } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useCartStore } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/Button";
 import type { Order } from "@/types";
 
@@ -14,16 +14,17 @@ const STATUS_CONFIG = {
     icon: Clock,
     color: "text-yellow-400",
     bg: "bg-yellow-400/10 border-yellow-400/30",
-    title: "Payment Pending",
+    title: "Confirming Payment…",
     message:
-      "Your order has been created. Complete the payment in the tab that just opened. This page will update automatically once Paynow or Stripe confirms your payment.",
+      "Waiting for confirmation from our payment partner. This usually takes a few seconds. The page updates automatically — no need to refresh.",
   },
   awaiting_payment: {
     icon: Clock,
     color: "text-yellow-400",
     bg: "bg-yellow-400/10 border-yellow-400/30",
     title: "Awaiting Payment",
-    message: "Please complete your payment in the payment gateway tab. This page refreshes every 10 seconds.",
+    message:
+      "Waiting for payment confirmation. If you completed payment, this page will update automatically. If payment did not complete, go back to checkout and try again.",
   },
   paid: {
     icon: CheckCircle,
@@ -37,7 +38,7 @@ const STATUS_CONFIG = {
     color: "text-gold-500",
     bg: "bg-gold-500/10 border-gold-500/30",
     title: "Order Processing",
-    message: "Your payment was successful! We are preparing your order for dispatch.",
+    message: "Payment received! We are preparing your order for dispatch.",
   },
   shipped: {
     icon: Package,
@@ -78,39 +79,39 @@ const STATUS_CONFIG = {
 
 export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
-  const searchParams = useSearchParams();
-  const urlStatus = searchParams.get("status");
+  const { clearCart } = useCartStore();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState(Date.now());
 
   async function fetchOrder() {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("orders")
-      .select("*, items:order_items(*)")
-      .eq("id", id)
-      .single();
-    setOrder(data as Order | null);
+    const res = await fetch(`/api/orders/${id}`);
+    if (res.ok) {
+      const { order: data } = await res.json();
+      setOrder(data as Order);
+    }
     setLoading(false);
-    setLastRefresh(Date.now());
   }
 
   useEffect(() => {
     fetchOrder();
   }, [id]);
 
-  // Auto-refresh every 10s while awaiting payment
+  // Clear cart once payment is confirmed by the gateway
   useEffect(() => {
-    const status = order?.status ?? urlStatus;
-    const shouldPoll =
-      status === "awaiting_payment" || status === "pending";
-    if (!shouldPoll) return;
+    if (!order) return;
+    const isPaidStatus = ["paid", "processing", "shipped", "delivered"].includes(order.status);
+    if (isPaidStatus) clearCart();
+  }, [order?.status]);
 
+  // Auto-refresh every 10s while awaiting confirmation
+  useEffect(() => {
+    const status = order?.status;
+    const shouldPoll = status === "awaiting_payment" || status === "pending";
+    if (!shouldPoll) return;
     const interval = setInterval(fetchOrder, 10_000);
     return () => clearInterval(interval);
-  }, [order?.status, urlStatus]);
+  }, [order?.status]);
 
   if (loading) {
     return (

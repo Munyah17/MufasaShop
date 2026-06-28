@@ -16,7 +16,7 @@ const PAYNOW_METHODS = [
 ];
 
 export default function CheckoutPage() {
-  const { items, total, itemCount, clearCart } = useCartStore();
+  const { items, total, itemCount } = useCartStore();
   const cartTotal = total();
   const count = itemCount();
   const shipping = cartTotal >= 150 ? 0 : 15;
@@ -102,22 +102,14 @@ export default function CheckoutPage() {
         throw new Error(data.error ?? "Failed to initiate payment.");
       }
 
-      /* ── Payment gateway does all the work ──────────────────────────
-         We open the hosted checkout URL in a new tab.
-         The gateway handles card/mobile money collection, fraud checks,
-         and confirmation. We never touch payment data.
-         Webhooks (/api/webhooks/stripe or /api/webhooks/paynow) will
-         update the order status when the gateway confirms payment.
-      ─────────────────────────────────────────────────────────────── */
-      clearCart();
-      window.open(data.url, "_blank", "noopener,noreferrer");
-
-      // Redirect user to the pending order page
-      window.location.href = `/orders/${data.orderId}?status=pending`;
+      // Full browser redirect to hosted payment gateway.
+      // The gateway redirects back to /orders/{id} on success or cancel.
+      // Cart is cleared on the order page once payment is confirmed.
+      window.location.href = data.url;
+      // setLoading intentionally not called here — button stays loading during navigation
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
       setLoading(false);
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     }
   }
 
