@@ -2,57 +2,44 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Shield, Truck, RefreshCw, Zap } from "lucide-react";
 import logo from "@/assets/mufasa-logo.png";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/shop/ProductCard";
 import type { Product } from "@/types";
 
 const PRODUCT_SELECT = "*, category:categories(*), images:product_images(*)";
 
+function db() { return createAdminClient(); }
+
 async function getFeatured(): Promise<Product[]> {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.from("products").select(PRODUCT_SELECT)
-      .eq("is_featured", true).eq("is_active", true)
-      .order("created_at", { ascending: false }).limit(8);
-    return (data as Product[]) ?? [];
-  } catch { return []; }
+  const { data } = await db().from("products").select(PRODUCT_SELECT)
+    .eq("is_featured", true).eq("is_active", true)
+    .order("created_at", { ascending: false }).limit(8);
+  return (data as Product[]) ?? [];
 }
 
 async function getPremium(): Promise<Product[]> {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.from("products").select(PRODUCT_SELECT)
-      .gte("price", 50).eq("is_active", true)
-      .order("price", { ascending: false }).limit(8);
-    return (data as Product[]) ?? [];
-  } catch { return []; }
+  const { data } = await db().from("products").select(PRODUCT_SELECT)
+    .gte("price", 50).eq("is_active", true)
+    .order("price", { ascending: false }).limit(8);
+  return (data as Product[]) ?? [];
 }
 
 async function getBestsellers(): Promise<Product[]> {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.from("products").select(PRODUCT_SELECT)
-      .contains("tags", ["bestseller"]).eq("is_active", true).limit(8);
-    return (data as Product[]) ?? [];
-  } catch { return []; }
+  const { data } = await db().from("products").select(PRODUCT_SELECT)
+    .contains("tags", ["bestseller"]).eq("is_active", true).limit(8);
+  return (data as Product[]) ?? [];
 }
 
 async function getHighTech(): Promise<Product[]> {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.from("products").select(PRODUCT_SELECT)
-      .contains("tags", ["hightech"]).eq("is_active", true).limit(8);
-    return (data as Product[]) ?? [];
-  } catch { return []; }
+  const { data } = await db().from("products").select(PRODUCT_SELECT)
+    .contains("tags", ["hightech"]).eq("is_active", true).limit(8);
+  return (data as Product[]) ?? [];
 }
 
 async function getAccessories(): Promise<Product[]> {
-  try {
-    const supabase = await createClient();
-    const { data } = await supabase.from("products").select(PRODUCT_SELECT)
-      .contains("tags", ["accessories"]).eq("is_active", true).limit(8);
-    return (data as Product[]) ?? [];
-  } catch { return []; }
+  const { data } = await db().from("products").select(PRODUCT_SELECT)
+    .contains("tags", ["accessories"]).eq("is_active", true).limit(8);
+  return (data as Product[]) ?? [];
 }
 
 const categories = [
