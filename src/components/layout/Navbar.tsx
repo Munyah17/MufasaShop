@@ -43,11 +43,11 @@ export function Navbar({ profile }: NavbarProps) {
   const count = mounted ? itemCount() : 0;
 
   const navLinks = [
+    { href: "/", label: "Home" },
     { href: "/products", label: "All Products" },
-    { href: "/products?category=smartphones", label: "Smartphones" },
-    { href: "/products?category=accessories", label: "Accessories" },
     { href: "/products?category=audio", label: "Audio" },
-    { href: "/products?category=wearables", label: "Wearables" },
+    { href: "/products?category=accessories", label: "Accessories" },
+    { href: "/products?category=smartphones", label: "Smartphones" },
   ];
 
   const portalHref = profile ? getDefaultPortal(profile.role) : null;
@@ -193,54 +193,68 @@ export function Navbar({ profile }: NavbarProps) {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile slide-over menu — fixed overlay, slides over content */}
       {mobileOpen && (
-        <div className="lg:hidden bg-obsidian-800/98 backdrop-blur-md border-b border-gold-500/20">
-          <nav className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="px-3 py-3 text-obsidian-100 hover:text-gold-500 hover:bg-obsidian-700 rounded-md text-sm font-medium tracking-wide transition-all"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="border-t border-obsidian-700 mt-2 pt-2 space-y-1">
+        <div className="lg:hidden fixed inset-0 z-[60] flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Drawer from right */}
+          <div className="absolute right-0 top-0 h-full w-72 max-w-[85vw] bg-obsidian-900 border-l border-obsidian-700 flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-obsidian-800">
+              <span className="font-display font-bold text-gold-500 text-sm tracking-widest uppercase">Menu</span>
+              <button onClick={() => setMobileOpen(false)} className="p-1 text-obsidian-400 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="px-3 py-3 text-obsidian-100 hover:text-gold-400 hover:bg-obsidian-800 rounded-lg text-sm font-medium tracking-wide transition-all"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="border-t border-obsidian-800 px-3 py-4 space-y-1">
               {profile ? (
                 <>
                   <div className="px-3 py-2">
-                    <p className="text-obsidian-300 text-sm font-medium">{displayName}</p>
+                    <p className="text-obsidian-200 text-sm font-semibold">{displayName}</p>
                     <p className="text-obsidian-500 text-xs">{ROLE_LABELS[profile.role]}</p>
                   </div>
                   {portalHref && (
                     <Link
                       href={portalHref}
                       onClick={() => setMobileOpen(false)}
-                      className="px-3 py-3 text-obsidian-100 hover:text-gold-500 hover:bg-obsidian-700 rounded-md text-sm font-medium transition-all flex items-center gap-2"
+                      className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-obsidian-200 hover:text-gold-400 hover:bg-obsidian-800 rounded-lg transition-all"
                     >
-                      <LayoutDashboard size={16} /> My Portal
+                      <LayoutDashboard size={15} /> My Portal
                     </Link>
                   )}
                   <button
                     onClick={() => { handleSignOut(); setMobileOpen(false); }}
-                    className="w-full px-3 py-3 text-rose-400 hover:bg-rose-500/10 rounded-md text-sm font-medium transition-all flex items-center gap-2"
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
                   >
-                    <LogOut size={16} /> Sign Out
+                    <LogOut size={15} /> Sign Out
                   </button>
                 </>
               ) : (
                 <Link
                   href="/auth/login"
                   onClick={() => setMobileOpen(false)}
-                  className="px-3 py-3 text-obsidian-100 hover:text-gold-500 hover:bg-obsidian-700 rounded-md text-sm font-medium tracking-wide transition-all flex items-center gap-2"
+                  className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-obsidian-200 hover:text-gold-400 hover:bg-obsidian-800 rounded-lg transition-all"
                 >
-                  <User size={16} /> Sign In / Register
+                  <User size={15} /> Sign In / Register
                 </Link>
               )}
             </div>
-          </nav>
+          </div>
         </div>
       )}
     </header>

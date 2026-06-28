@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
-import { Cinzel, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { NavbarWrapper } from "@/components/layout/NavbarWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { Providers } from "./providers";
 
-const cinzel = Cinzel({
-  variable: "--font-cinzel",
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "900"],
-  display: "swap",
-});
-
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   display: "swap",
 });
 
@@ -42,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cinzel.variable} ${inter.variable} h-full`}
+      className={`${inter.variable} h-full`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-obsidian-900 text-obsidian-50 antialiased">

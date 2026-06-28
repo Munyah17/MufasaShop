@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, ShoppingBag, Package, Users, MapPin,
   Truck, Store, BarChart3, Settings, LogOut, ChevronLeft,
   X
 } from "lucide-react";
-import { createBrowserClient } from "@supabase/ssr";
 import { hasPermission, ROLE_LABELS, ROLE_COLORS, ADMIN_NAV } from "@/lib/roles";
 import type { Profile } from "@/types";
 
@@ -23,16 +22,6 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ profile, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-
-  async function handleLogout() {
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    await supabase.auth.signOut();
-    router.push("/auth/login");
-  }
 
   const navItems = ADMIN_NAV.filter((item) =>
     !item.permission || hasPermission(profile.role, item.permission)
@@ -111,13 +100,15 @@ export function AdminSidebar({ profile, onClose }: AdminSidebarProps) {
           <ChevronLeft size={16} />
           Back to Shop
         </Link>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-obsidian-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-        >
-          <LogOut size={16} />
-          Sign Out
-        </button>
+        <form action="/api/auth/signout" method="post">
+          <button
+            type="submit"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-obsidian-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+          >
+            <LogOut size={16} />
+            Sign Out
+          </button>
+        </form>
       </div>
     </aside>
   );

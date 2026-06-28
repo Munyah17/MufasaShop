@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { MapPin, LayoutDashboard, ShoppingBag, TrendingUp, PlusCircle, LogOut } from "lucide-react";
+import { AgentMobileNav } from "@/components/agent/AgentMobileNav";
 
 export const metadata = { title: "Agent Portal | MUFASA" };
 
@@ -37,6 +38,7 @@ export default async function AgentLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen bg-obsidian-950">
+      {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col w-60 bg-obsidian-950 border-r border-gold-500/15">
         <div className="p-4 border-b border-gold-500/15">
           <Link href="/" className="flex items-center gap-2">
@@ -90,7 +92,16 @@ export default async function AgentLayout({ children }: { children: React.ReactN
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">{children}</main>
+      {/* Main content column — includes mobile top bar */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <AgentMobileNav
+          displayName={displayName}
+          walletBalance={agentProfile?.wallet_balance ?? 0}
+          town={agentProfile?.town ?? null}
+          navItems={navItems.map((n) => ({ href: n.href, label: n.label }))}
+        />
+        <main className="flex-1 overflow-auto">{children}</main>
+      </div>
     </div>
   );
 }
