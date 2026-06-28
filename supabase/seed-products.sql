@@ -532,15 +532,15 @@ ON CONFLICT (slug) DO NOTHING;
 
 -- ── 3. Product images (Unsplash — already in next.config.ts allowed domains) ──
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug = '12-android-tab-pro14' ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug = '10-android-tab' ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   '100w-usb-c-cable-1m','type-c-braided-2m','type-c-braided-1-5m',
@@ -548,7 +548,7 @@ FROM public.products p WHERE p.slug IN (
   'usbc-lightning-led-cable','usbc-lightning-digital-cable'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   'super-fast-car-charger-66w','car-charger-display-66w',
@@ -556,22 +556,22 @@ FROM public.products p WHERE p.slug IN (
   '50w-gan-charger-3port-uk','50w-gan-charger-2port-uk','50w-gan-charger-3port-eu'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1494905998402-395d579af36f?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug = 'bt-car-modulator-qc3' ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN ('dc-ac-inverter-300w-display','dc-ac-inverter-300w') ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1606220838315-056192d5e927?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   'r510-tws-earbuds','c01-bt-earbuds','wave-beam2-earbuds',
   'buds3-pro-earbuds','buds2-pro-r510-earbuds'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   'wh-1000xm4-style-anc','picun-b8-bt-headphones',
@@ -579,65 +579,65 @@ FROM public.products p WHERE p.slug IN (
   'picun-utv01-tv-headphones'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   'jbl-charge6-bt-speaker','jbl-carry-bt-speaker',
   'jc2309-outdoor-bt-speaker'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1545454675-3531b543be5d?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   'bt618b-mini-speaker','bt201-mini-speaker','st153-mini-desk-speaker-pair'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   'gaming-cooling-pad-5level-rgb','ls001-gaming-cooling-pad',
   'foldable-laptop-cooling-pad','dual-fan-laptop-cooling-pad'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug = 'mpt-ii-bt-thermal-printer' ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1546614042-7df3c24c9e5d?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   'sinotrack-st-901a-gps','gf09-mini-gps-tracker'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug = 'tuya-wifi-smart-lock' ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN ('s10-business-smartwatch','s9-ultra-smartwatch-49mm') ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   'otg-usbc-to-usb3-adapter','vikefon-magnetic-car-charger'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1508614999368-9260051292e5?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug = 'e88pro-4k-rc-drone' ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug IN (
   '115-in-1-precision-screwdriver','42-in-1-phone-repair-kit','poly-phone-repair-station'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug = 'handheld-laser-printer' ON CONFLICT DO NOTHING;
 
-INSERT INTO public.product_images (product_id, url, alt_text, is_primary, sort_order)
+INSERT INTO public.product_images (product_id, url, alt, is_primary, sort_order)
 SELECT p.id, 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80&auto=format', p.name, true, 0
 FROM public.products p WHERE p.slug = '300g-photo-paper-set' ON CONFLICT DO NOTHING;
 
