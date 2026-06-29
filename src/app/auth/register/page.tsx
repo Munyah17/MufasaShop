@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, User, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import logo from "@/assets/mufasa-logo.png";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -69,10 +71,14 @@ export default function RegisterPage() {
 
       <div className="relative w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <div className="w-9 h-9 bg-gold-500 rounded-sm flex items-center justify-center">
-              <span className="text-obsidian-900 font-display font-black">M</span>
-            </div>
+          <div className="flex justify-center mb-4">
+            <Image
+              src={logo}
+              alt="MUFASA Gadgets"
+              width={160}
+              height={160}
+              className="object-contain"
+            />
           </div>
           <h1 className="font-display font-bold text-2xl text-obsidian-50">Join MUFASA</h1>
           <p className="text-obsidian-500 text-sm mt-1">Create your premium account</p>

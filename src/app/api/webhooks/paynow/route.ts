@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyPaynowHash } from "@/lib/paynow";
+import { logError } from "@/lib/logger";
 
 /**
  * POST /api/webhooks/paynow  (resultUrl)
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
   const integrationKey = process.env.PAYNOW_INTEGRATION_KEY!;
 
   if (!verifyPaynowHash(params, integrationKey)) {
-    console.error("[paynow webhook] invalid hash — possible tampering");
+    logError("webhooks/paynow — hash verification failed", new Error("Invalid hash"), { reference: params.reference });
     return NextResponse.json({ error: "Invalid hash" }, { status: 400 });
   }
 
@@ -62,7 +63,6 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (findError || !order) {
-    // Fallback: try matching by payment_reference
     const { data: orderByRef } = await supabase
       .from("orders")
       .select("id")
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (!orderByRef) {
-      console.error("[paynow webhook] order not found for pollurl:", pollurl);
+      logError("webhooks/paynow — order not found", new Error("No matching order"), { pollurl, reference });
       return NextResponse.json({ received: true });
     }
 
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     .eq("id", order.id);
 
   if (updateError) {
-    console.error("[paynow webhook] DB update error:", updateError);
+    logError("webhooks/paynow — order update", updateError, { order_id: order.id });
     return NextResponse.json({ error: "DB update failed" }, { status: 500 });
   }
 

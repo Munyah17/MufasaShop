@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { logError } from "@/lib/logger";
 
 /**
  * POST /api/webhooks/stripe
@@ -22,11 +23,8 @@ export async function POST(req: NextRequest) {
     const { stripe, STRIPE_WEBHOOK_SECRET } = await import("@/lib/stripe");
     event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
   } catch (err: unknown) {
-    console.error("[stripe webhook] signature verification failed:", err);
-    return NextResponse.json(
-      { error: `Webhook signature verification failed: ${err instanceof Error ? err.message : ""}` },
-      { status: 400 }
-    );
+    logError("webhooks/stripe — signature verification", err);
+    return NextResponse.json({ error: "Webhook verification failed" }, { status: 400 });
   }
 
   const supabase = createAdminClient();
@@ -53,7 +51,7 @@ export async function POST(req: NextRequest) {
           .eq("id", orderId);
 
         if (error) {
-          console.error("[stripe webhook] failed to update order:", error);
+          logError("webhooks/stripe — order update", error, { orderId });
           return NextResponse.json({ error: "DB update failed" }, { status: 500 });
         }
 

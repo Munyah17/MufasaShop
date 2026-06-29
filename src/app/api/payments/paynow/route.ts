@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { initiatePaynowCheckout } from "@/lib/paynow";
+import { logError } from "@/lib/logger";
 
 /**
  * POST /api/payments/paynow
@@ -51,8 +52,8 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (orderError || !order) {
-      console.error("[paynow] order insert error:", orderError);
-      return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+      logError("payments/paynow — order insert", orderError, { customer_email });
+      return NextResponse.json({ error: "Unable to process your order. Please try again." }, { status: 500 });
     }
 
     // 2. Insert order items
@@ -86,14 +87,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (!result.success || !result.redirectUrl) {
-      console.error("[paynow] initiation failed:", result.error);
-      // Roll back the order to failed
+      logError("payments/paynow — initiation", result.error, { order_id: order.id });
       await supabase
         .from("orders")
         .update({ status: "failed", payment_status: "failed" })
         .eq("id", order.id);
       return NextResponse.json(
-        { error: result.error ?? "Paynow initiation failed" },
+        { error: "Payment gateway unavailable. Please try again or choose Stripe." },
         { status: 502 }
       );
     }
@@ -109,9 +109,9 @@ export async function POST(req: NextRequest) {
     // 5. Return redirect URL — frontend opens it in new tab
     return NextResponse.json({ url: result.redirectUrl, orderId: order.id });
   } catch (err: unknown) {
-    console.error("[paynow] checkout error:", err);
+    logError("payments/paynow — checkout", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Internal server error" },
+      { error: "Payment initiation failed. Please try again or contact support." },
       { status: 500 }
     );
   }

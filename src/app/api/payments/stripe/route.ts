@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { logError } from "@/lib/logger";
 
 /**
  * POST /api/payments/stripe
@@ -53,8 +54,8 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (orderError || !order) {
-      console.error("[stripe] order insert error:", orderError);
-      return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+      logError("payments/stripe — order insert", orderError, { customer_email });
+      return NextResponse.json({ error: "Unable to process your order. Please try again." }, { status: 500 });
     }
 
     // 2. Insert order items
@@ -125,9 +126,9 @@ export async function POST(req: NextRequest) {
     // 5. Return hosted checkout URL — frontend opens this in a new tab
     return NextResponse.json({ url: session.url, orderId: order.id });
   } catch (err: unknown) {
-    console.error("[stripe] checkout error:", err);
+    logError("payments/stripe — checkout", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Internal server error" },
+      { error: "Payment initiation failed. Please try again or contact support." },
       { status: 500 }
     );
   }
