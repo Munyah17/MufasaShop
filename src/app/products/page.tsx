@@ -1,8 +1,10 @@
 import { Suspense } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ProductFilters } from "@/components/shop/ProductFilters";
 import type { Product } from "@/types";
+
+export const revalidate = 60;
 
 interface PageProps {
   searchParams: Promise<{
@@ -22,22 +24,16 @@ async function getProducts(params: {
   page?: string;
 }): Promise<{ products: Product[]; total: number }> {
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     let query = supabase
       .from("products")
       .select("*, category:categories(*), images:product_images(*)", { count: "exact" })
       .eq("is_active", true);
 
-    // Category filter: resolve slug → id first
     if (params.category) {
       const { data: cat } = await supabase
-        .from("categories")
-        .select("id")
-        .eq("slug", params.category)
-        .single();
-      if (cat) {
-        query = query.eq("category_id", cat.id);
-      }
+        .from("categories").select("id").eq("slug", params.category).single();
+      if (cat) query = query.eq("category_id", cat.id);
     }
 
     if (params.featured === "true") query = query.eq("is_featured", true);

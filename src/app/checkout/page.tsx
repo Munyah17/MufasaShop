@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft, ShieldCheck, Lock, CreditCard, Smartphone,
-  CheckCircle, Truck, Store, MapPin, Clock,
+  CheckCircle, Truck, Store, MapPin, Clock, Search, X,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/Button";
 import {
-  DELIVERY_CITIES, COLLECTION_POINT, getZonesForCity, getDeliveryFee,
+  DELIVERY_CITIES, COLLECTION_POINT, searchAreas,
+  type DeliveryArea,
 } from "@/lib/delivery";
 import type { PaymentMethod } from "@/types";
 
@@ -21,13 +22,13 @@ interface FormState {
   customer_email: string;
   customer_phone: string;
   addr_line1: string;
-  addr_suburb: string;
+  addr_detail: string;
   notes: string;
   payment_method: PaymentMethod;
 }
 
 export default function CheckoutPage() {
-  const { items, total, itemCount, clearCart } = useCartStore();
+  const { items, total, itemCount } = useCartStore();
   const cartTotal = total();
   const count = itemCount();
 
@@ -36,47 +37,70 @@ export default function CheckoutPage() {
     customer_email: "",
     customer_phone: "",
     addr_line1: "",
-    addr_suburb: "",
+    addr_detail: "",
     notes: "",
     payment_method: "stripe",
   });
+
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("delivery");
   const [deliveryCity, setDeliveryCity] = useState("Harare");
-  const [deliveryZone, setDeliveryZone] = useState("");
+  const [selectedArea, setSelectedArea] = useState<DeliveryArea | null>(null);
+  const [suburbQuery, setSuburbQuery] = useState("");
+  const [suburbResults, setSuburbResults] = useState<DeliveryArea[]>([]);
+  const [showResults, setShowResults] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const zones = useMemo(() => getZonesForCity(deliveryCity), [deliveryCity]);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowResults(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  // Filter suburb results as user types
+  useEffect(() => {
+    if (suburbQuery.length < 1) {
+      setSuburbResults([]);
+      return;
+    }
+    setSuburbResults(searchAreas(deliveryCity, suburbQuery));
+    setShowResults(true);
+  }, [suburbQuery, deliveryCity]);
+
+  function handleCityChange(city: string) {
+    setDeliveryCity(city);
+    setSelectedArea(null);
+    setSuburbQuery("");
+  }
+
+  function selectArea(area: DeliveryArea) {
+    setSelectedArea(area);
+    setSuburbQuery(area.name);
+    setShowResults(false);
+  }
+
+  function clearArea() {
+    setSelectedArea(null);
+    setSuburbQuery("");
+  }
 
   const shippingFee = useMemo(() => {
     if (deliveryMethod === "collection") return 0;
-    return getDeliveryFee(deliveryCity, deliveryZone);
-  }, [deliveryMethod, deliveryCity, deliveryZone]);
+    return selectedArea?.fee ?? 0;
+  }, [deliveryMethod, selectedArea]);
 
   const orderTotal = cartTotal + shippingFee;
-
-  const selectedZone = zones.find((z) => z.id === deliveryZone);
-
-  if (items.length === 0) {
-    return (
-      <div className="min-h-screen pt-24 flex flex-col items-center justify-center gap-4 text-center px-4">
-        <span className="text-5xl">🛒</span>
-        <h2 className="font-display text-2xl text-obsidian-200">Your cart is empty</h2>
-        <Link href="/products">
-          <Button variant="gold">Browse Products</Button>
-        </Link>
-      </div>
-    );
-  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
-  }
-
-  function handleCityChange(city: string) {
-    setDeliveryCity(city);
-    setDeliveryZone(""); // reset zone when city changes
   }
 
   async function handleCheckout() {
@@ -88,8 +112,8 @@ export default function CheckoutPage() {
     }
 
     if (deliveryMethod === "delivery") {
-      if (!deliveryCity || !deliveryZone) {
-        setError("Please select your delivery city and zone.");
+      if (!selectedArea) {
+        setError("Please search and select your suburb.");
         return;
       }
       if (!form.addr_line1) {
@@ -113,7 +137,6 @@ export default function CheckoutPage() {
             name: i.name,
             price: i.price,
             quantity: i.quantity,
-            image: i.image,
           })),
           customer_name: form.customer_name,
           customer_email: form.customer_email,
@@ -122,15 +145,15 @@ export default function CheckoutPage() {
             deliveryMethod === "delivery"
               ? {
                   line1: form.addr_line1,
-                  line2: form.addr_suburb || undefined,
-                  city: deliveryCity,
-                  state: selectedZone?.name,
+                  line2: form.addr_detail || undefined,
+                  city: selectedArea!.city,
+                  state: selectedArea!.name,
                   country: "Zimbabwe",
                 }
               : null,
           notes:
             deliveryMethod === "collection"
-              ? `SELF COLLECTION. ${form.notes || ""}`.trim()
+              ? `SELF COLLECTION${form.notes ? ". " + form.notes : ""}`.trim()
               : form.notes || null,
           shipping_cost: shippingFee,
           fulfillment_type: deliveryMethod,
@@ -143,12 +166,21 @@ export default function CheckoutPage() {
         throw new Error(data.error ?? "Failed to initiate payment.");
       }
 
-      // Full browser redirect — gateway redirects back to /orders/{id} on success
       window.location.href = data.url;
     } catch (err: unknown) {
       setLoading(false);
       setError(err instanceof Error ? err.message : "Something went wrong.");
     }
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen pt-24 flex flex-col items-center justify-center gap-4 text-center px-4">
+        <span className="text-5xl">🛒</span>
+        <h2 className="font-display text-2xl text-obsidian-200">Your cart is empty</h2>
+        <Link href="/products"><Button variant="gold">Browse Products</Button></Link>
+      </div>
+    );
   }
 
   return (
@@ -169,8 +201,8 @@ export default function CheckoutPage() {
         <div className="flex items-center gap-3 px-4 py-3 mb-8 bg-obsidian-800/60 border border-gold-500/20 rounded-xl">
           <ShieldCheck size={18} className="text-gold-500 shrink-0" />
           <p className="text-obsidian-300 text-sm">
-            Payment is handled entirely by Stripe or Paynow. We never see or store your card
-            or mobile money details. All transactions are settled in <strong className="text-obsidian-100">USD</strong>.
+            Payment is handled entirely by Stripe or Paynow — we never see your card details.
+            All transactions settle in <strong className="text-obsidian-100">USD</strong>.
           </p>
           <Lock size={14} className="text-obsidian-500 shrink-0 ml-auto" />
         </div>
@@ -182,33 +214,12 @@ export default function CheckoutPage() {
             {/* Contact */}
             <Section title="Contact Information">
               <p className="text-obsidian-500 text-xs mb-4">
-                Buying as a gift from abroad? Enter your own details — we&apos;ll ship to the Zimbabwe address below.
+                Buying as a gift from abroad? Enter your own details — we ship to the Zimbabwe address below.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field
-                  label="Full Name *"
-                  name="customer_name"
-                  value={form.customer_name}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                />
-                <Field
-                  label="Email Address *"
-                  name="customer_email"
-                  type="email"
-                  value={form.customer_email}
-                  onChange={handleChange}
-                  placeholder="you@email.com"
-                />
-                <Field
-                  label="Phone Number"
-                  name="customer_phone"
-                  type="tel"
-                  value={form.customer_phone}
-                  onChange={handleChange}
-                  placeholder="+263 77 390 9307"
-                  className="sm:col-span-2"
-                />
+                <Field label="Full Name *" name="customer_name" value={form.customer_name} onChange={handleChange} placeholder="John Doe" />
+                <Field label="Email Address *" name="customer_email" type="email" value={form.customer_email} onChange={handleChange} placeholder="you@email.com" />
+                <Field label="Phone Number" name="customer_phone" type="tel" value={form.customer_phone} onChange={handleChange} placeholder="+263 77 390 9307" className="sm:col-span-2" />
               </div>
             </Section>
 
@@ -219,7 +230,7 @@ export default function CheckoutPage() {
                   active={deliveryMethod === "delivery"}
                   onClick={() => setDeliveryMethod("delivery")}
                   icon={<Truck size={20} />}
-                  label="Delivery"
+                  label="Home Delivery"
                   sub="Delivered in Zimbabwe"
                 />
                 <MethodCard
@@ -227,7 +238,7 @@ export default function CheckoutPage() {
                   onClick={() => setDeliveryMethod("collection")}
                   icon={<Store size={20} />}
                   label="Self Collection"
-                  sub="Pick up — no shipping fee"
+                  sub="Pick up — free"
                 />
               </div>
 
@@ -235,68 +246,86 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   {/* City */}
                   <div>
-                    <label className={labelCls}>City *</label>
+                    <label className={labelCls}>City / Town *</label>
                     <select
                       value={deliveryCity}
                       onChange={(e) => handleCityChange(e.target.value)}
                       className={inputCls}
                     >
                       {DELIVERY_CITIES.map((c) => (
-                        <option key={c.city} value={c.city}>{c.city}</option>
+                        <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
                   </div>
 
-                  {/* Zone */}
+                  {/* Suburb autocomplete */}
                   <div>
-                    <label className={labelCls}>Area / Zone *</label>
-                    <select
-                      value={deliveryZone}
-                      onChange={(e) => setDeliveryZone(e.target.value)}
-                      className={inputCls}
-                    >
-                      <option value="">— Select your area —</option>
-                      {zones.map((z) => (
-                        <option key={z.id} value={z.id}>
-                          {z.name} — ${z.fee.toFixed(2)}
-                        </option>
-                      ))}
-                    </select>
-                    {selectedZone && (
-                      <p className="text-obsidian-500 text-xs mt-1">
-                        Areas: {selectedZone.areas.slice(0, 6).join(", ")}
-                        {selectedZone.areas.length > 6 ? ` +${selectedZone.areas.length - 6} more` : ""}
-                      </p>
+                    <label className={labelCls}>Suburb / Area *</label>
+                    <div className="relative" ref={searchRef}>
+                      <div className="relative">
+                        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-obsidian-500 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={suburbQuery}
+                          onChange={(e) => {
+                            setSuburbQuery(e.target.value);
+                            if (selectedArea && e.target.value !== selectedArea.name) setSelectedArea(null);
+                          }}
+                          onFocus={() => suburbQuery.length > 0 && setShowResults(true)}
+                          placeholder={`Search suburb in ${deliveryCity}…`}
+                          className={`${inputCls} pl-9 pr-9`}
+                        />
+                        {suburbQuery && (
+                          <button
+                            type="button"
+                            onClick={clearArea}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-obsidian-500 hover:text-obsidian-300"
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Results dropdown */}
+                      {showResults && suburbResults.length > 0 && (
+                        <div className="absolute z-20 w-full mt-1 bg-obsidian-900 border border-obsidian-600 rounded-xl shadow-xl overflow-hidden">
+                          {suburbResults.map((area) => (
+                            <button
+                              key={area.id}
+                              type="button"
+                              onClick={() => selectArea(area)}
+                              className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-obsidian-800 transition-colors border-b border-obsidian-800 last:border-0"
+                            >
+                              <span className="text-obsidian-200 text-sm">{area.name}</span>
+                              <span className="text-gold-500 text-xs font-mono font-semibold shrink-0 ml-3">
+                                ${area.fee.toFixed(2)}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {showResults && suburbQuery.length > 0 && suburbResults.length === 0 && (
+                        <div className="absolute z-20 w-full mt-1 bg-obsidian-900 border border-obsidian-600 rounded-xl shadow-xl px-4 py-3">
+                          <p className="text-obsidian-500 text-sm">No suburbs found. Try a different name.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {selectedArea && (
+                      <div className="flex items-center justify-between mt-2 px-3 py-2 bg-gold-500/10 border border-gold-500/25 rounded-lg">
+                        <div className="flex items-center gap-2 text-gold-400">
+                          <MapPin size={13} />
+                          <span className="text-xs font-medium">{selectedArea.name}, {selectedArea.city}</span>
+                        </div>
+                        <span className="text-gold-400 text-xs font-mono font-bold">${selectedArea.fee.toFixed(2)}</span>
+                      </div>
                     )}
                   </div>
 
                   {/* Street address */}
-                  <Field
-                    label="Street Address *"
-                    name="addr_line1"
-                    value={form.addr_line1}
-                    onChange={handleChange}
-                    placeholder="123 Main Street"
-                  />
-                  <Field
-                    label="Suburb / Flat / Unit"
-                    name="addr_suburb"
-                    value={form.addr_suburb}
-                    onChange={handleChange}
-                    placeholder="e.g. Borrowdale, Flat 4B"
-                  />
-
-                  {deliveryZone && (
-                    <div className="flex items-center justify-between px-4 py-3 bg-gold-500/10 border border-gold-500/25 rounded-xl">
-                      <div className="flex items-center gap-2 text-gold-400">
-                        <Truck size={15} />
-                        <span className="text-sm font-medium">Delivery to {deliveryCity}</span>
-                      </div>
-                      <span className="text-gold-400 font-bold font-mono">
-                        ${shippingFee.toFixed(2)}
-                      </span>
-                    </div>
-                  )}
+                  <Field label="Street Address *" name="addr_line1" value={form.addr_line1} onChange={handleChange} placeholder="123 Main Street" />
+                  <Field label="Flat / Unit / Building" name="addr_detail" value={form.addr_detail} onChange={handleChange} placeholder="e.g. Flat 4B, Green Court" />
                 </div>
               ) : (
                 <div className="bg-obsidian-900 border border-obsidian-700 rounded-xl p-4 space-y-2.5">
@@ -325,7 +354,7 @@ export default function CheckoutPage() {
                 name="notes"
                 value={form.notes}
                 onChange={handleChange}
-                placeholder="Special delivery instructions, gate codes, recipient name if gifting, etc."
+                placeholder="Special instructions, gate codes, recipient name if gifting…"
                 rows={3}
                 className={`${inputCls} resize-none`}
               />
@@ -334,11 +363,9 @@ export default function CheckoutPage() {
             {/* Payment Method */}
             <Section title="Payment Method">
               <p className="text-obsidian-500 text-xs mb-4">
-                All payments are settled in <strong className="text-obsidian-300">USD</strong>.
-                Your browser will be redirected to the payment gateway — we never collect
-                your payment details.
+                All payments settle in <strong className="text-obsidian-300">USD</strong>.
+                Your browser will redirect to the gateway — we never collect your payment details.
               </p>
-
               <div className="space-y-4">
                 <PaymentOption
                   id="stripe"
@@ -352,7 +379,6 @@ export default function CheckoutPage() {
                   accentColor="border-[#635BFF]/40 bg-[#635BFF]/5"
                   tagline="Powered by Stripe — PCI DSS Level 1 Certified"
                 />
-
                 <PaymentOption
                   id="paynow"
                   selected={form.payment_method === "paynow"}
@@ -412,10 +438,10 @@ export default function CheckoutPage() {
                   </span>
                   {deliveryMethod === "collection" ? (
                     <span className="text-green-400 font-mono font-semibold">FREE</span>
-                  ) : deliveryZone ? (
+                  ) : selectedArea ? (
                     <span className="text-obsidian-100 font-mono">${shippingFee.toFixed(2)}</span>
                   ) : (
-                    <span className="text-obsidian-500 text-xs">Select zone above</span>
+                    <span className="text-obsidian-500 text-xs">Select suburb above</span>
                   )}
                 </div>
               </div>
@@ -444,10 +470,8 @@ export default function CheckoutPage() {
 
                 <p className="text-obsidian-600 text-[11px] text-center mt-3 leading-relaxed font-mono">
                   By proceeding you agree to our{" "}
-                  <Link href="/legal/terms" className="text-obsidian-400 hover:text-gold-500">
-                    Terms
-                  </Link>
-                  . Payment by {form.payment_method === "stripe" ? "Stripe, Inc." : "Paynow Zimbabwe"} · USD only.
+                  <Link href="/legal/terms" className="text-obsidian-400 hover:text-gold-500">Terms</Link>.
+                  {" "}Payment by {form.payment_method === "stripe" ? "Stripe, Inc." : "Paynow Zimbabwe"} · USD only.
                 </p>
               </div>
             </div>
@@ -485,17 +509,12 @@ function Field({
   return (
     <div className={className}>
       <label className={labelCls}>{label}</label>
-      <input
-        type={type} name={name} value={value} onChange={onChange}
-        placeholder={placeholder} className={inputCls}
-      />
+      <input type={type} name={name} value={value} onChange={onChange} placeholder={placeholder} className={inputCls} />
     </div>
   );
 }
 
-function MethodCard({
-  active, onClick, icon, label, sub,
-}: {
+function MethodCard({ active, onClick, icon, label, sub }: {
   active: boolean; onClick: () => void;
   icon: React.ReactNode; label: string; sub: string;
 }) {
@@ -504,9 +523,7 @@ function MethodCard({
       type="button"
       onClick={onClick}
       className={`w-full rounded-xl border-2 p-4 text-left transition-all duration-150 ${
-        active
-          ? "border-gold-500 bg-gold-500/8"
-          : "border-obsidian-700 bg-obsidian-900 hover:border-obsidian-500"
+        active ? "border-gold-500 bg-gold-500/8" : "border-obsidian-700 bg-obsidian-900 hover:border-obsidian-500"
       }`}
     >
       <div className={`mb-1.5 ${active ? "text-gold-500" : "text-obsidian-400"}`}>{icon}</div>

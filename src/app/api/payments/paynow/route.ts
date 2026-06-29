@@ -17,7 +17,7 @@ import { logError } from "@/lib/logger";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { items, customer_name, customer_email, customer_phone, shipping_address, notes, shipping_cost } = body;
+    const { items, customer_name, customer_email, customer_phone, shipping_address, notes, shipping_cost, fulfillment_type } = body;
 
     if (!items?.length || !customer_email || !customer_name) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
         customer_phone: customer_phone ?? null,
         shipping_address,
         notes: notes ?? null,
+        fulfillment_type: fulfillment_type ?? "delivery",
         status: "awaiting_payment",
         payment_method: "paynow",
         payment_status: "pending",
