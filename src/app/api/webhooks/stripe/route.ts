@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
   let event: import("stripe").Stripe.Event;
 
   try {
-    const { stripe, STRIPE_WEBHOOK_SECRET } = await import("@/lib/stripe");
-    event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
+    const { getStripe, STRIPE_WEBHOOK_SECRET } = await import("@/lib/stripe");
+    event = getStripe().webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
   } catch (err: unknown) {
     logError("webhooks/stripe — signature verification", err);
     return NextResponse.json({ error: "Webhook verification failed" }, { status: 400 });
