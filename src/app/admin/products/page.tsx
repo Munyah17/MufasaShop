@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Package, Plus, AlertCircle } from "lucide-react";
 import { hasPermission } from "@/lib/roles";
+import { DeleteProductButton } from "@/components/admin/DeleteProductButton";
 import type { Role } from "@/types";
 
 export const metadata = { title: "Products | MUFASA Admin" };
@@ -150,7 +151,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                         <div className="flex items-center gap-3">
                           <a href={`/admin/products/${product.id}`} className="text-xs text-gold-400 hover:text-gold-300 font-medium">Edit</a>
                           {canDelete && (
-                            <button className="text-xs text-rose-400 hover:text-rose-300 font-medium">Delete</button>
+                            <DeleteProductButton id={product.id} name={product.name} />
                           )}
                         </div>
                       </td>
