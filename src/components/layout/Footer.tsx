@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, MapPin, Instagram, Twitter, Facebook } from "lucide-react";
-import logo from "@/assets/mufasa-logo.png";
+import logo from "@/assets/mufasa-header.png";
 
 export function Footer() {
   return (

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { ShoppingBag, Menu, X, Search, User, LayoutDashboard, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import logo from "@/assets/mufasa-logo.png";
+import logo from "@/assets/mufasa-header.png";
 import icon from "@/assets/mufasa-icon.png";
 import { useCartStore } from "@/lib/store/cartStore";
 import { getDefaultPortal, ROLE_LABELS } from "@/lib/roles";
