@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { logError } from "@/lib/logger";
 import { hasPermission } from "@/lib/roles";
+import type { Permission } from "@/lib/roles";
 import type { Role } from "@/types";
 
-async function getAuthedAdmin(requiredPermission: string) {
+async function getAuthedAdmin(requiredPermission: Permission) {
   const auth = await createClient();
   const { data: { user } } = await auth.auth.getUser();
   if (!user) return null;
