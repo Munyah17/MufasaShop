@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import { NavbarWrapper } from "@/components/layout/NavbarWrapper";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { Providers } from "./providers";
+
+const PORTAL_PREFIXES = ["/admin", "/agent", "/delivery"];
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-heading",
@@ -42,7 +45,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") ?? "";
+  const isPortal = PORTAL_PREFIXES.some((p) => pathname.startsWith(p));
+
   return (
     <html
       lang="en"
@@ -54,7 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <NavbarWrapper />
           <CartDrawer />
           <main className="flex-1">{children}</main>
-          <Footer />
+          {!isPortal && <Footer />}
         </Providers>
       </body>
     </html>

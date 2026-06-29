@@ -14,11 +14,15 @@ export async function proxy(request: NextRequest) {
   const isProtected = AUTH_REQUIRED.some((p) => pathname.startsWith(p));
   const isAuthPage  = AUTH_PAGES.some((p) => pathname === p);
 
+  // Always stamp the pathname so server components can read it via headers()
+  const addPathname = (res: NextResponse) => {
+    res.headers.set("x-pathname", pathname);
+    return res;
+  };
+
   // For public routes (home, products, cart, api, etc.) — pass straight through.
-  // This avoids an unnecessary DB round-trip on every public page request
-  // and prevents a Supabase misconfiguration from taking the whole site down.
   if (!isProtected && !isAuthPage) {
-    return NextResponse.next({ request });
+    return addPathname(NextResponse.next({ request }));
   }
 
   // Guard: if env vars are not yet configured, don't crash — just pass through.
@@ -63,11 +67,9 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    return response;
+    return addPathname(response);
   } catch {
-    // If the auth check itself fails (e.g. network issue, bad key),
-    // let the request through — pages will handle auth on their own.
-    return NextResponse.next({ request });
+    return addPathname(NextResponse.next({ request }));
   }
 }
 
