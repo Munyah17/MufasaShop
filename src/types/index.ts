@@ -249,4 +249,5 @@ export interface CheckoutFormData {
   shipping_address: ShippingAddress;
   notes?: string;
   payment_method: PaymentMethod;
+  delivery_method: "delivery" | "collection";
 }
