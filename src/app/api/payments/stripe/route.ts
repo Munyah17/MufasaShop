@@ -125,9 +125,10 @@ export async function POST(req: NextRequest) {
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      payment_method_types: ["card"],
       customer_email,
       line_items: lineItems,
-      billing_address_collection: "auto", // allow diaspora buyers from any country
+      billing_address_collection: "auto",
       success_url: `${appUrl}/orders/${order.id}?status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/checkout?status=cancelled`,
       metadata: {
