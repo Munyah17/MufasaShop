@@ -14,9 +14,6 @@ import {
 } from "@/lib/delivery";
 import type { PaymentMethod } from "@/types";
 
-const STRIPE_METHODS = ["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay", "Link"];
-const PAYNOW_METHODS = ["EcoCash", "OneMoney", "InnBucks", "Visa", "Mastercard"];
-
 type DeliveryMethod = "delivery" | "collection";
 
 interface FormState {
@@ -352,7 +349,6 @@ export default function CheckoutPage() {
                   icon={<CreditCard size={20} className="text-[#635BFF]" />}
                   bannerSrc="/payment-banners/stripe-banner.png"
                   bannerAlt="Stripe — Visa, Mastercard, Amex, Apple Pay, Google Pay"
-                  methods={STRIPE_METHODS}
                   accentColor="border-[#635BFF]/40 bg-[#635BFF]/5"
                   tagline="Powered by Stripe — PCI DSS Level 1 Certified"
                 />
@@ -364,9 +360,8 @@ export default function CheckoutPage() {
                   label="Pay with Paynow Zimbabwe"
                   subtitle="Mobile money & cards — settled in USD"
                   icon={<Smartphone size={20} className="text-[#E31837]" />}
-                  bannerSrc="/payment-banners/paynow-banner.png"
+                  bannerSrc="/payment-banners/paynow-banner.svg"
                   bannerAlt="Paynow — EcoCash, OneMoney, InnBucks, Visa, Mastercard"
-                  methods={PAYNOW_METHODS}
                   accentColor="border-[#E31837]/40 bg-[#E31837]/5"
                   tagline="Zimbabwe's trusted payment gateway"
                 />
@@ -523,11 +518,11 @@ function MethodCard({
 
 function PaymentOption({
   id, selected, onSelect, label, subtitle, icon, bannerSrc, bannerAlt,
-  methods, accentColor, tagline,
+  accentColor, tagline,
 }: {
   id: string; selected: boolean; onSelect: () => void; label: string;
   subtitle: string; icon: React.ReactNode; bannerSrc: string; bannerAlt: string;
-  methods: string[]; accentColor: string; tagline: string;
+  accentColor: string; tagline: string;
 }) {
   return (
     <button
@@ -552,15 +547,8 @@ function PaymentOption({
         </div>
       </div>
 
-      <div className="relative w-full h-16 rounded-lg overflow-hidden bg-obsidian-800 border border-obsidian-700 mb-3">
-        <Image src={bannerSrc} alt={bannerAlt} fill className="object-contain p-2" onError={() => {}} />
-        <div className="absolute inset-0 flex items-center justify-center gap-2 flex-wrap px-3">
-          {methods.map((m) => (
-            <span key={m} className="px-2 py-0.5 bg-obsidian-700 border border-obsidian-600 rounded text-[10px] text-obsidian-300 font-medium">
-              {m}
-            </span>
-          ))}
-        </div>
+      <div className="relative w-full h-16 rounded-lg overflow-hidden bg-white border border-obsidian-700 mb-3">
+        <Image src={bannerSrc} alt={bannerAlt} fill className="object-contain px-3 py-1.5" />
       </div>
 
       <p className="text-obsidian-600 text-[11px] flex items-center gap-1">
