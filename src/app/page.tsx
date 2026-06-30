@@ -153,8 +153,8 @@ export default async function HomePage() {
           />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
-          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+        <div className="relative w-full px-6 sm:px-10 lg:px-16 xl:px-24 pt-28 pb-20">
+          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-20">
             {/* Text */}
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold-500/25 bg-gold-500/8 text-gold-400 text-[11px] font-mono font-semibold tracking-[0.2em] uppercase mb-7">
@@ -202,7 +202,7 @@ export default async function HomePage() {
 
             {/* Hero visual */}
             <div className="flex-1 flex justify-center lg:justify-end">
-              <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
+              <div className="relative w-72 h-72 sm:w-96 sm:h-96 lg:w-[480px] lg:h-[480px]">
                 <div className="absolute inset-0 rounded-full bg-gold-500/8 blur-3xl" />
                 <div className="relative w-full h-full rounded-2xl border border-obsidian-700 bg-obsidian-900/60 backdrop-blur-sm flex items-center justify-center p-8">
                   <Image
