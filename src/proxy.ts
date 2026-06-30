@@ -11,31 +11,25 @@ export async function proxy(request: NextRequest) {
   const isProtected = AUTH_REQUIRED.some((p) => pathname.startsWith(p));
   const isAuthPage  = AUTH_PAGES.some((p) => pathname === p);
 
-  // Inject pathname into REQUEST headers so server components can read it
-  // via headers().get("x-pathname"). Must be on the request, not the response.
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-pathname", pathname);
-
   if (!isProtected && !isAuthPage) {
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    return NextResponse.next({ request });
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseKey) {
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    return NextResponse.next({ request });
   }
 
   try {
-    // Start with our patched request headers so server components get x-pathname
-    let response = NextResponse.next({ request: { headers: requestHeaders } });
+    let response = NextResponse.next({ request });
 
     const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request: { headers: requestHeaders } });
+          response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
           );
@@ -61,7 +55,7 @@ export async function proxy(request: NextRequest) {
 
     return response;
   } catch {
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    return NextResponse.next({ request });
   }
 }
 

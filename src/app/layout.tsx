@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
-import { headers } from "next/headers";
 import "./globals.css";
 import { NavbarWrapper } from "@/components/layout/NavbarWrapper";
 import { Footer } from "@/components/layout/Footer";
+import { ShopChrome } from "@/components/layout/ShopChrome";
 import { CartDrawer } from "@/components/shop/CartDrawer";
 import { Providers } from "./providers";
-
-const PORTAL_PREFIXES = ["/admin", "/agent", "/delivery"];
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-heading",
@@ -45,11 +43,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") ?? "";
-  const isPortal = PORTAL_PREFIXES.some((p) => pathname.startsWith(p));
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
@@ -58,10 +52,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body className="min-h-full flex flex-col antialiased">
         <Providers>
-          <NavbarWrapper />
-          <CartDrawer />
-          <main className="flex-1">{children}</main>
-          {!isPortal && <Footer />}
+          {/*
+            ShopChrome (client) checks usePathname() and hides navbar + footer
+            on portal routes (/admin, /agent, /delivery).
+            NavbarWrapper and Footer are passed as props so they stay server-rendered.
+          */}
+          <ShopChrome navbar={<NavbarWrapper />} footer={<Footer />}>
+            <CartDrawer />
+            <main className="flex-1">{children}</main>
+          </ShopChrome>
         </Providers>
       </body>
     </html>

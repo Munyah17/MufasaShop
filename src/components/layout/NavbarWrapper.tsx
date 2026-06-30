@@ -1,17 +1,8 @@
-import { headers } from "next/headers";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { Navbar } from "./Navbar";
 import type { Profile } from "@/types";
 
-// Portal routes manage their own headers — suppress the shop navbar there
-const PORTAL_PREFIXES = ["/admin", "/agent", "/delivery"];
-
 export async function NavbarWrapper() {
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") ?? "";
-
-  if (PORTAL_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return null;
-
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
