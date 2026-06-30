@@ -113,7 +113,11 @@ export async function POST(req: NextRequest) {
               price_data: {
                 currency: "usd" as const,
                 unit_amount: Math.round(deliveryFee * 100),
-                product_data: { name: "Delivery to Zimbabwe" },
+                product_data: {
+                  name: shipping_address?.state
+                    ? `Delivery — ${shipping_address.state}, ${shipping_address.city ?? "Zimbabwe"}`
+                    : "Delivery to Zimbabwe",
+                },
               },
               quantity: 1 as const,
             },
