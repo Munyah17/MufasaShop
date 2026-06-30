@@ -3,8 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
-import { ShoppingBag, Menu, X, Search, User, LayoutDashboard, LogOut } from "lucide-react";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { ShoppingBag, Menu, X, Search, User, LayoutDashboard, LogOut, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import logo from "@/assets/mufasa-header.png";
 import icon from "@/assets/mufasa-icon.png";
 import { useCartStore } from "@/lib/store/cartStore";
@@ -22,6 +22,7 @@ export function Navbar({ profile }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const { itemCount, toggleCart } = useCartStore();
+  const { resolvedTheme, setTheme } = useTheme();
   const signoutFormRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
 
@@ -32,6 +33,13 @@ export function Navbar({ profile }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close mobile menu on route change / resize to desktop
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth >= 1024) setMobileOpen(false); };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   useEffect(() => {
     if (!accountOpen) return;
     const handler = () => setAccountOpen(false);
@@ -39,12 +47,18 @@ export function Navbar({ profile }: NavbarProps) {
     return () => document.removeEventListener("click", handler);
   }, [accountOpen]);
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   function handleSignOut() {
     signoutFormRef.current?.submit();
   }
 
-  // Read cart count only after mount to avoid SSR/localStorage hydration mismatch.
   const count = mounted ? itemCount() : 0;
+  const isDark = mounted ? resolvedTheme === "dark" : false;
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -67,26 +81,26 @@ export function Navbar({ profile }: NavbarProps) {
           : "bg-transparent"
       }`}
     >
-      {/* Hidden form for server-side sign-out (no client-side Supabase needed) */}
       <form ref={signoutFormRef} action="/api/auth/signout" method="post" className="hidden" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
+
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
             <Image
               src={icon}
               alt="MUFASA icon"
-              width={32}
-              height={32}
+              width={30}
+              height={30}
               className="rounded-sm object-contain sm:hidden"
               priority
             />
             <Image
               src={logo}
               alt="MUFASA Gadgets"
-              width={140}
-              height={36}
+              width={130}
+              height={34}
               className="hidden sm:block object-contain object-left"
               priority
             />
@@ -107,10 +121,26 @@ export function Navbar({ profile }: NavbarProps) {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
-            <button aria-label="Search" className="p-2 text-obsidian-300 hover:text-gold-500 transition-colors">
+          <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
+
+            {/* Search — desktop only */}
+            <button
+              aria-label="Search"
+              className="hidden sm:flex p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
+            >
               <Search size={20} />
             </button>
+
+            {/* Theme toggle — desktop only */}
+            {mounted && (
+              <button
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                className="hidden sm:flex w-9 h-9 items-center justify-center rounded-lg text-obsidian-400 hover:text-gold-500 hover:bg-obsidian-800 transition-all"
+              >
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+            )}
 
             {/* Account */}
             <div className="relative">
@@ -118,11 +148,11 @@ export function Navbar({ profile }: NavbarProps) {
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); setAccountOpen(!accountOpen); }}
-                    className="flex items-center gap-1.5 p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
+                    className="flex items-center p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
                     aria-label="Account menu"
                   >
-                    <div className="w-6 h-6 rounded-full bg-gold-500/20 border border-gold-500/30 flex items-center justify-center">
-                      <span className="text-gold-400 text-xs font-bold">
+                    <div className="w-7 h-7 rounded-full bg-gold-500/20 border border-gold-500/30 flex items-center justify-center">
+                      <span className="text-gold-400 text-xs font-bold leading-none">
                         {displayName?.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -131,7 +161,7 @@ export function Navbar({ profile }: NavbarProps) {
                   {accountOpen && (
                     <div
                       onClick={(e) => e.stopPropagation()}
-                      className="absolute right-0 top-full mt-2 w-52 bg-obsidian-900 border border-obsidian-700 rounded-xl shadow-2xl overflow-hidden"
+                      className="absolute right-0 top-full mt-2 w-52 bg-obsidian-900 border border-obsidian-700 rounded-xl shadow-2xl overflow-hidden z-50"
                     >
                       <div className="px-4 py-3 border-b border-obsidian-800">
                         <p className="text-obsidian-50 text-sm font-medium truncate">{displayName}</p>
@@ -170,16 +200,15 @@ export function Navbar({ profile }: NavbarProps) {
               ) : (
                 <Link
                   href="/auth/login"
-                  aria-label="Account"
-                  className="p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
+                  aria-label="Sign in"
+                  className="p-2 text-obsidian-300 hover:text-gold-500 transition-colors flex items-center"
                 >
                   <User size={20} />
                 </Link>
               )}
             </div>
 
-            <ThemeToggle />
-
+            {/* Cart */}
             <button
               onClick={toggleCart}
               aria-label="Open cart"
@@ -193,6 +222,7 @@ export function Navbar({ profile }: NavbarProps) {
               )}
             </button>
 
+            {/* Mobile menu toggle */}
             <button
               className="lg:hidden p-2 text-obsidian-300 hover:text-gold-500 transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -204,7 +234,7 @@ export function Navbar({ profile }: NavbarProps) {
         </div>
       </div>
 
-      {/* Mobile slide-over menu — fixed overlay, slides over content */}
+      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-[60] flex">
           {/* Backdrop */}
@@ -213,14 +243,20 @@ export function Navbar({ profile }: NavbarProps) {
             onClick={() => setMobileOpen(false)}
           />
           {/* Drawer from right */}
-          <div className="absolute right-0 top-0 h-full w-72 max-w-[85vw] bg-obsidian-900 border-l border-obsidian-700 flex flex-col shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-obsidian-800">
+          <div className="absolute right-0 top-0 h-full w-72 max-w-[85vw] bg-obsidian-900 border-l border-obsidian-700 flex flex-col shadow-2xl overflow-y-auto overflow-x-hidden">
+            {/* Drawer header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-obsidian-800 shrink-0">
               <Image src={icon} alt="MUFASA" width={26} height={26} className="rounded-sm object-contain" />
-              <button onClick={() => setMobileOpen(false)} className="p-1 text-obsidian-400 hover:text-white transition-colors">
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="p-1 text-obsidian-400 hover:text-white transition-colors"
+              >
                 <X size={20} />
               </button>
             </div>
-            <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
+
+            {/* Nav links */}
+            <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -232,11 +268,13 @@ export function Navbar({ profile }: NavbarProps) {
                 </Link>
               ))}
             </nav>
-            <div className="border-t border-obsidian-800 px-3 py-4 space-y-1">
+
+            {/* Account section */}
+            <div className="border-t border-obsidian-800 px-3 py-4 space-y-1 shrink-0">
               {profile ? (
                 <>
                   <div className="px-3 py-2">
-                    <p className="text-obsidian-200 text-sm font-semibold">{displayName}</p>
+                    <p className="text-obsidian-200 text-sm font-semibold truncate">{displayName}</p>
                     <p className="text-obsidian-500 text-xs">{ROLE_LABELS[profile.role]}</p>
                   </div>
                   {portalHref && (
@@ -248,6 +286,13 @@ export function Navbar({ profile }: NavbarProps) {
                       <LayoutDashboard size={15} /> My Portal
                     </Link>
                   )}
+                  <Link
+                    href="/orders"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-obsidian-200 hover:text-gold-400 hover:bg-obsidian-800 rounded-lg transition-all"
+                  >
+                    <ShoppingBag size={15} /> My Orders
+                  </Link>
                   <button
                     onClick={() => { handleSignOut(); setMobileOpen(false); }}
                     className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
@@ -265,6 +310,19 @@ export function Navbar({ profile }: NavbarProps) {
                 </Link>
               )}
             </div>
+
+            {/* Theme toggle in mobile drawer */}
+            {mounted && (
+              <div className="border-t border-obsidian-800 px-3 py-3 shrink-0">
+                <button
+                  onClick={() => { setTheme(isDark ? "light" : "dark"); setMobileOpen(false); }}
+                  className="flex items-center gap-2.5 w-full px-3 py-2.5 text-sm text-obsidian-300 hover:text-gold-400 hover:bg-obsidian-800 rounded-lg transition-all"
+                >
+                  {isDark ? <Sun size={15} /> : <Moon size={15} />}
+                  {isDark ? "Light Mode" : "Dark Mode"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

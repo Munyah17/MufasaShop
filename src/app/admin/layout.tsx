@@ -23,16 +23,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="portal-dark flex min-h-screen bg-obsidian-950">
+    <div className="portal-dark flex min-h-screen w-full overflow-x-hidden bg-obsidian-950">
       {/* Desktop sidebar */}
-      <div className="hidden lg:flex">
+      <div className="hidden lg:flex shrink-0">
         <AdminSidebar profile={profile} />
       </div>
 
       {/* Main content column — includes mobile top bar */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         <AdminMobileWrapper profile={profile} />
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

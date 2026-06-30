@@ -38,8 +38,8 @@ export default async function DeliveryLayout({ children }: { children: React.Rea
   ];
 
   return (
-    <div className="portal-dark flex min-h-screen bg-obsidian-950">
-      <aside className="hidden lg:flex flex-col w-60 bg-obsidian-950 border-r border-gold-500/15">
+    <div className="portal-dark flex min-h-screen w-full overflow-x-hidden bg-obsidian-950">
+      <aside className="hidden lg:flex flex-col w-60 shrink-0 bg-obsidian-950 border-r border-gold-500/15">
         <div className="p-4 border-b border-gold-500/15">
           <Link href="/" className="flex items-center gap-2">
             <Image src={icon} alt="MUFASA" width={28} height={28} className="rounded-sm object-contain" />
@@ -92,7 +92,7 @@ export default async function DeliveryLayout({ children }: { children: React.Rea
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">{children}</main>
     </div>
   );
 }

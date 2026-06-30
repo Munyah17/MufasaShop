@@ -39,7 +39,7 @@ export default async function AgentLayout({ children }: { children: React.ReactN
   ];
 
   return (
-    <div className="portal-dark flex min-h-screen bg-obsidian-950">
+    <div className="portal-dark flex min-h-screen w-full overflow-x-hidden bg-obsidian-950">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col w-60 bg-obsidian-950 border-r border-gold-500/15">
         <div className="p-4 border-b border-gold-500/15">
@@ -93,7 +93,7 @@ export default async function AgentLayout({ children }: { children: React.ReactN
       </aside>
 
       {/* Main content column — includes mobile top bar */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         <AgentMobileNav
           displayName={displayName}
           walletBalance={agentProfile?.wallet_balance ?? 0}
